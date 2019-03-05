@@ -10,9 +10,21 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Menu"
         android:layout_marginTop="20dp"
+        android:background="@color/colorPrimaryDark"
+        android:onClick="intentMenuActivity"
         android:padding="30dp"
-        android:onClick="intentMenu"/>
+        android:text="Menu"
+        android:textColor="@android:color/white" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:background="@color/colorPrimaryDark"
+        android:onClick="intentAddProductActivity"
+        android:padding="30dp"
+        android:text="Add Product"
+        android:textColor="@android:color/white" />
 
 </LinearLayout>

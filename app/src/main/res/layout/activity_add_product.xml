@@ -1,9 +1,299 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    tools:context="net.cafepp.cafepp.activities.AddProductActivity"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activities.AddProductActivity">
+    android:descendantFocusability="beforeDescendants"
+    android:focusableInTouchMode="true">
 
-</android.support.constraint.ConstraintLayout>
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <net.cafepp.cafepp.custom_views.LockableScrollView
+            android:id="@+id/scrollView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/default_padding">
+
+                <EditText
+                    android:id="@+id/productName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:hint="@string/product_name"
+                    android:inputType="textPersonName"
+                    android:selectAllOnFocus="false"
+                    android:singleLine="true" />
+
+                <EditText
+                    android:id="@+id/price"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:ems="10"
+                    android:hint="@string/price"
+                    android:inputType="numberDecimal"
+                    android:selectAllOnFocus="false"
+                    android:singleLine="true" />
+
+                <EditText
+                    android:id="@+id/description"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:layout_marginTop="20dp"
+                    android:ems="10"
+                    android:gravity="top|start"
+                    android:hint="@string/description"
+                    android:inputType="textMultiLine"
+                    android:selectAllOnFocus="false" />
+
+                <TextView
+                    android:id="@+id/imagesTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="30dp"
+                    android:text="@string/images"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="3dp"
+                    android:layout_marginTop="3dp"
+                    android:background="@mipmap/black_dark_transparent_50"
+                    android:orientation="horizontal" />
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginBottom="20dp"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/AddImageButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:onClick="AddImageButtonOnClick"
+                        android:padding="25dp"
+                        android:text="@string/add_images" />
+
+                    <TextView
+                        android:id="@+id/idealImageResolution"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_toRightOf="@id/AddImageButton"
+                        android:layout_toEndOf="@id/AddImageButton"
+                        android:paddingLeft="20dp"
+                        android:paddingStart="20dp"
+                        android:text="@string/ideal_image_res"
+                        android:textSize="16sp" />
+
+                </RelativeLayout>
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/recyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="30dp"
+                    android:focusable="false" />
+
+                <TextView
+                    android:id="@+id/categoriesTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/categories"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="3dp"
+                    android:layout_marginTop="3dp"
+                    android:background="@mipmap/black_dark_transparent_50"
+                    android:orientation="horizontal" />
+
+                <LinearLayout
+                    android:id="@+id/listViewLayout1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="vertical">
+
+                    <net.cafepp.cafepp.custom_views.NonScrollableListView
+                        android:id="@+id/addedCategoriesListView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:animateLayoutChanges="false"
+                        android:divider="#d1d1d1"
+                        android:dividerHeight="1px"
+                        android:focusable="false" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/addCategoryButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:onClick="AddCategorySpinnerBoxOnClick"
+                    android:padding="20dp"
+                    android:text="@string/add_category" />
+
+                <TextView
+                    android:id="@+id/ingredientsTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="30dp"
+                    android:text="@string/ingredients"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="3dp"
+                    android:layout_marginTop="3dp"
+                    android:background="@mipmap/black_dark_transparent_50"
+                    android:orientation="horizontal" />
+
+                <net.cafepp.cafepp.custom_views.ThreeStateCheckBox
+                    android:id="@+id/showAllCBTS"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginStart="10dp"
+                    android:text="@string/show_all_in_menu"
+                    android:textSize="18sp"
+                    android:visibility="gone" />
+
+                <LinearLayout
+                    android:id="@+id/LLUnderShow"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@mipmap/black_dark_transparent_50"
+                    android:orientation="vertical" />
+
+                <LinearLayout
+                    android:id="@+id/listViewLayout2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <net.cafepp.cafepp.custom_views.NonScrollableListView
+                        android:id="@+id/addedIngredientsListView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:divider="#d1d1d1"
+                        android:dividerHeight="1px"
+                        android:focusable="false">
+
+                    </net.cafepp.cafepp.custom_views.NonScrollableListView>
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/addIngredientButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:onClick="AddIngredientSpinnerBoxOnClick"
+                    android:padding="20dp"
+                    android:text="@string/add_ingredient" />
+
+                <TextView
+                    android:id="@+id/calorieTV"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="30dp"
+                    android:text="@string/calorie"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="3dp"
+                    android:layout_marginTop="3dp"
+                    android:background="@mipmap/black_dark_transparent_50"
+                    android:orientation="horizontal" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:orientation="horizontal">
+
+                    <EditText
+                        android:id="@+id/ProductCalorieET"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ems="10"
+                        android:hint="@string/calorie"
+                        android:inputType="numberDecimal"
+                        android:selectAllOnFocus="false"
+                        android:singleLine="true"
+                        android:textSize="20sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=" kcal / "
+                        android:textSize="20sp" />
+
+                    <EditText
+                        android:id="@+id/kgSumET"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ems="10"
+                        android:hint="@string/weight"
+                        android:inputType="numberDecimal"
+                        android:selectAllOnFocus="false"
+                        android:singleLine="true"
+                        android:textSize="20sp" />
+
+                    <TextView
+                        android:id="@+id/gramTV"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="20dp"
+                        android:text="gram"
+                        android:textSize="20sp"
+                        android:layout_marginRight="20dp" />
+
+                    <Button
+                        android:id="@+id/calculateButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:onClick="calculateButtonOnClick"
+                        android:padding="20dp"
+                        android:text="@string/calculate"
+                        android:textSize="15sp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="300dp"
+                    android:orientation="vertical" />
+
+            </LinearLayout>
+        </net.cafepp.cafepp.custom_views.LockableScrollView>
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/fragmentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </FrameLayout>
+</FrameLayout>
