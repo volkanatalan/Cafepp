@@ -1,18 +1,114 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".activities.MenuActivity"
+    android:id="@+id/content_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0099cc"
-    tools:context=".activities.MenuActivity"
-    android:id="@+id/content_view">
+    android:focusableInTouchMode="true">
 
-    <!-- The primary full-screen view. This can be replaced with whatever view
-         is needed to present your content, e.g. VideoView, SurfaceView,
-         TextureView, etc. -->
+    <ImageView
+        android:id="@+id/backgroundImage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        app:srcCompat="@drawable/restaurant"
+        android:contentDescription="@string/background_image_of_the_activity" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="90dp"
+            android:background="@color/colorPrimary"
+            android:gravity="center_vertical">
+
+            <LinearLayout
+                android:id="@+id/toolbarCenter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:layout_toEndOf="@id/backButton"
+                android:layout_toStartOf="@id/searchButton">
+
+                <ImageView
+                    android:id="@+id/companyLogo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="90dp"
+                    android:contentDescription="@string/company_logo_comes_here"
+                    app:srcCompat="@drawable/cafepp_logo2"/>
+
+                <RelativeLayout
+                    android:id="@+id/searchEditTextBase"
+                    android:layout_width="match_parent"
+                    android:layout_height="90dp"
+                    android:gravity="center_vertical"
+                    android:paddingEnd="10dp"
+                    android:paddingStart="10dp">
+
+                    <net.cafepp.cafepp.custom_views.EditTextWithDeleteButton
+                        android:id="@+id/searchEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"/>
+
+                </RelativeLayout>
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/backButton"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:padding="10dp"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="20dp"
+                app:srcCompat="@drawable/back_arrow"
+                android:onClick="onClickBackButton"/>
+
+            <ImageView
+                android:id="@+id/searchButton"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:padding="10dp"
+                android:layout_marginStart="0dp"
+                android:layout_marginEnd="20dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:contentDescription="@string/search_button"
+                app:srcCompat="@drawable/search_button"
+                android:onClick="onClickSearchButton"/>
+
+        </RelativeLayout>
 
 
-    <!-- This FrameLayout insets its children based on system windows using
-         android:fitsSystemWindows. -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="5dp"
+            android:background="@color/colorPrimaryDark"/>
+
+        <RelativeLayout
+            android:id="@+id/fragmentContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/fullscreen_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:keepScreenOn="true"
+        android:textColor="#33b5e5"
+        android:textSize="50sp"
+        android:textStyle="bold"/>
 
 </FrameLayout>

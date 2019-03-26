@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/black_dark_transparent_50"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="15dp"
+        android:background="@drawable/spinner_background"
+        android:orientation="vertical"
+        android:padding="30dp">
+
+        <TextView
+            android:id="@+id/spinerBaslikTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:text="Select or Search Items"
+            android:textSize="17sp"
+            android:textStyle="bold"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center|left"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/buyutec"/>
+
+            <EditText
+                android:id="@+id/aramaKutusu"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginLeft="10dp"
+                android:background="#ffffff"
+                android:inputType="text"
+                android:textCursorDrawable="@null"/>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="0.1dp"
+            android:background="#d1d1d1"/>
+
+        <Button
+            android:id="@+id/addNew"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="10dp"
+            android:padding="25dp"
+            android:text="Add New"
+            android:textAllCaps="false"
+            android:textSize="20sp"/>
+
+        <ListView
+            android:id="@+id/spinnerList"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:divider="#d1d1d1"
+            android:dividerHeight="0.1dp" />
+
+        <TextView
+            android:id="@+id/doneButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/spinner_background"
+            android:clickable="true"
+            android:paddingBottom="15dp"
+            android:paddingEnd="25dp"
+            android:paddingStart="25dp"
+            android:paddingTop="15dp"
+            android:text="Done"
+            android:textSize="16sp"/>
+
+    </LinearLayout>
+</LinearLayout>

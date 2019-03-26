@@ -1,8 +1,10 @@
 <resources>
-    <string name="app_name">Cafepp</string>
+    <string name="app_name">Cafépp</string>
 
     <!-- Activity titles -->
     <string name="title_activity_menu">Menu</string>
+
+    <string name="dummy_text">Lorem ipsum dolor sit amet</string>
 
     <string name="action_edit">Edit</string>
     <string name="action_settings">Settings</string>
@@ -17,14 +19,24 @@
     <string name="images">Images</string>
     <string name="add_images">Add Images</string>
     <string name="categories">Categories</string>
-    <string name="add_category">Add Category</string>
+    <string name="add_category">ADD CATEGORIES</string>
     <string name="choose_category_image">Choose Category Image</string>
+    <string name="add_ingredient">ADD INGREDIENTS</string>
     <string name="ingredients">Ingredients</string>
-    <string name="add_ingredient">Add Ingredient</string>
     <string name="IncludeAllIngredients">Include all ingredients to calculation</string>
     <string name="show">show</string>
     <string name="show_all_in_menu">Show all in the menu</string>
     <string name="delete_question">Delete?</string>
-    <string name="ideal_image_res">Your ideal image resolution: </string>
+    <string name="ideal_image_res">Your ideal images resolution: </string>
+    <string name="company_logo_comes_here">Company logo comes here.</string>
+    <string name="background_image_of_the_activity">Background images of the activity.</string>
+    <string name="there_is_not_any_product">There is not any product.</string>
+    <string name="there_is_not_any_category">There is not any category.</string>
+    <string name="dummy_text_long">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse lacinia porta lacinia. Donec bibendum risus at metus tristique, nec facilisis est auctor. Donec porttitor libero in lacinia tincidunt. Maecenas eget nunc tincidunt, imperdiet massa et, efficitur augue.</string>
+    <string name="price_title">Price:</string>
+    <string name="order">Order</string>
+    <string name="search_button">search button</string>
+    <string name="Press_twice_back_button_to_exit">Press twice back button to exit.</string>
+    <string name="admin_request">This permisson is required for locking the device screen to prevent your customers to reach undesired activities.</string>
 
 </resources>
