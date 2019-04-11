@@ -8,8 +8,10 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.nsd.NsdServiceInfo;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import net.cafepp.cafepp.R;
@@ -26,10 +28,14 @@ public class ClientService extends Service {
   private String deviceName;
   private NSDHelper nsdHelper;
   private boolean isRestartingDiscovery = false;
-  private List<NsdServiceInfo> foundDevices = new ArrayList<>();
+  private ArrayList<NsdServiceInfo> foundDevices = new ArrayList<>();
   
   
-  ClientService(Context context) {
+  public ClientService() {
+  
+  }
+  
+  public ClientService(Context context) {
     this.context = context;
   }
   
@@ -72,7 +78,6 @@ public class ClientService extends Service {
         startForeground(Constants.NOTIFICATION_ID.CLIENT_SERVICE, notification);
   
         nsdHelper = new NSDHelper(this);
-        nsdHelper.register(deviceName);
         setDiscoveryListener();
         setResolveListener();
         nsdHelper.startDiscovery();
@@ -80,7 +85,7 @@ public class ClientService extends Service {
       } else if (intent.getAction().equals(Constants.ACTION.STOP_ACTION)) {
         Log.i(TAG, "Client Service Stop Action entered.");
         
-        nsdHelper.unregister();
+        nsdHelper.stopDiscovery();
         stopForeground(true);
         stopSelf();
       }
@@ -93,6 +98,14 @@ public class ClientService extends Service {
     Log.d(TAG, "In onDestroy");
     nsdHelper.unregister();
     super.onDestroy();
+  }
+  
+  private void sendMessageToActivity(NsdServiceInfo info) {
+    Intent intent = new Intent("ClientService");
+    Bundle bundle = new Bundle();
+    bundle.putParcelable("Message", info);
+    intent.putExtra("Message", bundle);
+    LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
   }
   
   private void setDiscoveryListener() {
@@ -145,6 +158,7 @@ public class ClientService extends Service {
       @Override
       public void onResolved(final NsdServiceInfo serviceInfo) {
         foundDevices.add(serviceInfo);
+        sendMessageToActivity(serviceInfo);
       }
       
       @Override

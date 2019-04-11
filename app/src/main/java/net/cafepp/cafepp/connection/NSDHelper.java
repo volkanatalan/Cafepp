@@ -14,7 +14,7 @@ import static android.content.Context.WIFI_SERVICE;
 
 public class NSDHelper {
   private Context context;
-  private final String TAG;
+  private final String TAG = "NSDHelper";
   private final String SERVICE_TYPE = "_cafepp._tcp.";
   private String serviceName;
   private String ip;
@@ -32,7 +32,7 @@ public class NSDHelper {
   @SuppressWarnings("deprecation")
   public NSDHelper(Context context) {
     this.context = context;
-    TAG = "NSDHelper";
+    nsdManager = (NsdManager) context.getSystemService(Context.NSD_SERVICE);
   
     // Get local ip address
     WifiManager wm = (WifiManager) context.getApplicationContext().getSystemService(WIFI_SERVICE);
@@ -40,6 +40,37 @@ public class NSDHelper {
     Log.d(TAG, "Local IP: " + ip);
   }
   
+  
+  public void register(String serviceName) {
+    this.serviceName = serviceName;
+    initializeServerSocket();
+    initializeRegistrationListener();
+    registerService();
+  }
+  
+  public void unregister() {
+    if (isServiceRegistered) {
+      nsdManager.unregisterService(NSDRegistrationListener);
+      
+      try {
+        serverSocket.close();
+        Log.d(TAG, "Server socket closed.");
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+  
+  public void startDiscovery(){
+    initializeDiscoveryListener();
+    nsdManager.discoverServices(
+        SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, NSDDiscoveryListener);
+  }
+  
+  public void stopDiscovery() {
+    if (isOnDiscovery)
+      nsdManager.stopServiceDiscovery(NSDDiscoveryListener);
+  }
   
   /**
    * Initialize a socket to any available port.
@@ -73,7 +104,6 @@ public class NSDHelper {
     serviceInfo.setServiceType(SERVICE_TYPE);
     serviceInfo.setPort(localPort);
     
-    nsdManager = (NsdManager) context.getSystemService(Context.NSD_SERVICE);
     nsdManager.registerService(
         serviceInfo, NsdManager.PROTOCOL_DNS_SD, NSDRegistrationListener);
   }
@@ -238,41 +268,6 @@ public class NSDHelper {
         if (resolveListener != null) resolveListener.onResolveFailed(serviceInfo, errorCode);
       }
     };
-  }
-  
-  public void register(String serviceName) {
-    this.serviceName = serviceName;
-    initializeServerSocket();
-    initializeRegistrationListener();
-    registerService();
-  }
-  
-  public void unregister() {
-    if (isOnDiscovery) {
-      nsdManager.stopServiceDiscovery(NSDDiscoveryListener);
-    }
-    
-    if (isServiceRegistered) {
-      nsdManager.unregisterService(NSDRegistrationListener);
-      
-      try {
-        serverSocket.close();
-        Log.d(TAG, "Server socket closed.");
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-    }
-  }
-  
-  public void startDiscovery(){
-    initializeDiscoveryListener();
-    nsdManager.discoverServices(
-        SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, NSDDiscoveryListener);
-  }
-  
-  public void stopDiscovery() {
-    if (isOnDiscovery)
-      nsdManager.stopServiceDiscovery(NSDDiscoveryListener);
   }
   
   public interface RegistrationListener {
