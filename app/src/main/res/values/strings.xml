@@ -29,7 +29,7 @@
     <string name="delete_question">Delete?</string>
     <string name="ideal_image_res">Your ideal images resolution: </string>
     <string name="company_logo_comes_here">Company logo comes here.</string>
-    <string name="background_image_of_the_activity">Background images of the activity.</string>
+    <string name="background_image_of_the_activity">Background images of the context.</string>
     <string name="there_is_not_any_product">There is not any product.</string>
     <string name="there_is_not_any_category">There is not any category.</string>
     <string name="dummy_text_long">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse lacinia porta lacinia. Donec bibendum risus at metus tristique, nec facilisis est auctor. Donec porttitor libero in lacinia tincidunt. Maecenas eget nunc tincidunt, imperdiet massa et, efficitur augue.</string>
@@ -38,5 +38,35 @@
     <string name="search_button">search button</string>
     <string name="Press_twice_back_button_to_exit">Press twice back button to exit.</string>
     <string name="admin_request">This permisson is required for locking the device screen to prevent your customers to reach undesired activities.</string>
+    <string name="enter_as_administrator">ENTER AS ADMINISTRATOR</string>
+    <string name="connect_allcaps">CONNECT</string>
+    <string name="connect">Connect</string>
+    <string name="connected_to_devices">Connected to devices!</string>
+    <string name="cafepp_allcaps">CAFEPP</string>
+    <string name="search_for_devices">Search for devices</string>
+    <string name="cafépp_allcaps">CAFÉPP</string>
+    <string name="settings">Settings</string>
+    <string name="connection_settings">Connection Settings</string>
+    <string name="cafépp_device">Cafépp Device</string>
+    <string name="confirm">Confirm</string>
+    <string name="device_name">Device Name</string>
+    <string name="cancel">Cancel</string>
+    <string name="stop">Stop</string>
+    <string name="cafepp_device">Cafepp Device</string>
+    <string name="show_password">Show password</string>
+    <string name="password">password</string>
+    <string name="wifi_image_description">Wifi image changes when it is connected to a device.</string>
+    <string name="title_activity_home">HomeActivity</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="devices">Devices</string>
+    <string name="registered_devices">Registered devices:</string>
+    <string name="add_new_devices">Add new devices.</string>
+    <string name="client">Client</string>
+    <string name="server">Server</string>
+    <string name="add_devices">Add Devices</string>
 
 </resources>

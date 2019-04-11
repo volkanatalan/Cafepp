@@ -16,7 +16,7 @@ import android.widget.TextView;
 import net.cafepp.cafepp.R;
 import net.cafepp.cafepp.custom_views.CircleImageView;
 import net.cafepp.cafepp.databases.ProductDatabase;
-import net.cafepp.cafepp.models.Product;
+import net.cafepp.cafepp.objects.Product;
 
 import java.util.ArrayList;
 
@@ -116,7 +116,7 @@ public class ProductsFragment extends Fragment {
     
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-      View view = inflater.inflate(R.layout.list_item_menu_activity, null);
+      View view = inflater.inflate(R.layout.list_row_menu_activity, null);
       TextView productNameTextView = view.findViewById(R.id.titleTextView);
       CircleImageView productImage = view.findViewById(R.id.circleImageView);
       

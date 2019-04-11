@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +18,7 @@ import net.cafepp.cafepp.R;
 import net.cafepp.cafepp.activities.MenuActivity;
 import net.cafepp.cafepp.custom_views.CircleImageView;
 import net.cafepp.cafepp.databases.ProductDatabase;
-import net.cafepp.cafepp.models.Product;
+import net.cafepp.cafepp.objects.Product;
 
 import java.util.ArrayList;
 
@@ -153,7 +152,7 @@ public class SearchProductFragment extends Fragment {
     
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-      View view = inflater.inflate(R.layout.list_item_menu_activity, null);
+      View view = inflater.inflate(R.layout.list_row_menu_activity, null);
       TextView productNameTextView = view.findViewById(R.id.titleTextView);
       CircleImageView productImage = view.findViewById(R.id.circleImageView);
       

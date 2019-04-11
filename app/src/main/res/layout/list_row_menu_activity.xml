@@ -28,7 +28,7 @@
             android:paddingEnd="30dp"
             android:gravity="center_vertical"
             android:text="@string/dummy_text"
-            android:textColor="@color/cafepp_white"
+            android:textColor="@color/white"
             android:textSize="24sp"
             android:layout_weight="1"/>
 
@@ -38,7 +38,7 @@
             android:layout_height="wrap_content"
             android:visibility="gone"
             android:text="123.00"
-            android:textColor="@color/cafepp_white"
+            android:textColor="@color/white"
             android:textSize="24sp" />
     </LinearLayout>
 

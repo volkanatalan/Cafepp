@@ -8,13 +8,12 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.support.v4.util.Pair;
 import java.util.ArrayList;
 
-import net.cafepp.cafepp.models.ChosenIngredient;
-import net.cafepp.cafepp.models.Category;
-import net.cafepp.cafepp.models.Ingredient;
-import net.cafepp.cafepp.models.Product;
+import net.cafepp.cafepp.objects.ChosenIngredient;
+import net.cafepp.cafepp.objects.Category;
+import net.cafepp.cafepp.objects.Ingredient;
+import net.cafepp.cafepp.objects.Product;
 
 public class ProductDatabase extends SQLiteOpenHelper {
-  private Context context;
   private static final int DATABASE_VERSION = 1;
   private static final String DATABASE_NAME = "ProductDatabase.db";
   
@@ -71,7 +70,6 @@ public class ProductDatabase extends SQLiteOpenHelper {
   
   public ProductDatabase(Context context) {
     super(context, DATABASE_NAME, null, DATABASE_VERSION);
-    this.context = context;
   }
   
   @Override

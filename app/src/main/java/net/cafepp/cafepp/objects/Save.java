@@ -1,4 +1,4 @@
-package net.cafepp.cafepp.models;
+package net.cafepp.cafepp.objects;
 
 import android.app.Activity;
 import android.content.Context;

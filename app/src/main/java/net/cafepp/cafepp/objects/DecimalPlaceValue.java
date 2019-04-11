@@ -1,4 +1,4 @@
-package net.cafepp.cafepp.models;
+package net.cafepp.cafepp.objects;
 
 import android.text.Editable;
 import android.text.TextWatcher;

@@ -24,7 +24,7 @@ import android.widget.Toast;
 
 import net.cafepp.cafepp.R;
 import net.cafepp.cafepp.databases.ProductDatabase;
-import net.cafepp.cafepp.models.Ingredient;
+import net.cafepp.cafepp.objects.Ingredient;
 
 import java.util.ArrayList;
 import java.util.List;

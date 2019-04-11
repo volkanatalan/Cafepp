@@ -1,4 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="default_padding">32dp</dimen>
+    <dimen name="default_padding">20dp</dimen>
+    <dimen name="default_margin">20dp</dimen>
+    <dimen name="add_device_dim">30dp</dimen>
+    <dimen name="connect_image_dim">30dp</dimen>
+    <dimen name="cafepp_font">60sp</dimen>
+    <dimen name="main_activity_button_padding">20dp</dimen>
+    <dimen name="main_activity_button_font">14sp</dimen>
+    <dimen name="add_devices_button_font">15sp</dimen>
+    <dimen name="connect_switch_font">16sp</dimen>
+    <dimen name="connect_switch_margin_bottom">20dp</dimen>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="nav_header_vertical_spacing">8dp</dimen>
+    <dimen name="nav_header_height">176dp</dimen>
 </resources>

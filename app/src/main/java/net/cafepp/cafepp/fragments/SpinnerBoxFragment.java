@@ -301,7 +301,7 @@ public class SpinnerBoxFragment extends Fragment {
     
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-      View view = layoutInflater.inflate(R.layout.list_item_spinner_box, null);
+      View view = layoutInflater.inflate(R.layout.list_row_spinner_box, null);
       CheckedTextView checkedTextView = view.findViewById(R.id.text1);
       checkedTextView.setText(items.get(position).first);
       if (items.get(position).second.equals("product")) checkedTextView.setTypeface(checkedTextView.getTypeface(), Typeface.BOLD);

@@ -1,10 +1,10 @@
 package net.cafepp.cafepp.custom_views;
 
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -54,18 +54,13 @@ public class EditTextWithDeleteButton extends LinearLayout {
     editText.setLayoutParams(editTextLayoutParams);
     editText.setPadding(20, 0, 20, 0);
     editText.setTextSize(24f);
-    editText.setTextColor(getResources().getColor(R.color.cafepp_white));
+    editText.setTextColor(ContextCompat.getColor(context, R.color.white));
     editText.setTextAlignment(TEXT_ALIGNMENT_CENTER);
   
     addView(editText);
     addView(deleteImageView);
   
-    deleteImageView.setOnClickListener(new OnClickListener() {
-      @Override
-      public void onClick(View view) {
-        editText.setText("");
-      }
-    });
+    deleteImageView.setOnClickListener(view -> editText.setText(""));
     
     editText.addTextChangedListener(new TextWatcher() {
       @Override

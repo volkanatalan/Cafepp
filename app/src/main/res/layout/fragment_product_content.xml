@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/cafepp_white"
+    android:background="@color/white"
     tools:context=".fragments.ProductContentFragment">
 
     <net.cafepp.cafepp.custom_views.LockableScrollView
@@ -45,7 +45,7 @@
                     android:layout_marginTop="20dp"
                     android:layout_weight="1"
                     android:text="Kakaolu Islak Kek"
-                    android:textColor="@color/BLACK"
+                    android:textColor="@color/black"
                     android:textSize="30sp"
                     android:textStyle="bold" />
 
@@ -56,7 +56,7 @@
                     android:layout_marginTop="20dp"
                     android:lineSpacingExtra="10sp"
                     android:text="@string/dummy_text_long"
-                    android:textColor="@color/BLACK"
+                    android:textColor="@color/black"
                     android:textSize="24sp" />
 
                 <LinearLayout
@@ -71,7 +71,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="50dp"
                         android:text="@string/ingredients"
-                        android:textColor="@color/BLACK"
+                        android:textColor="@color/black"
                         android:textSize="20sp"
                         android:textStyle="bold" />
 
@@ -82,7 +82,7 @@
                         android:layout_marginTop="10dp"
                         android:lineSpacingExtra="10sp"
                         android:text="Yumurta, toz şeker, süt, ayçiçek yağı, kakao, vanilya, un, kabartma tozu"
-                        android:textColor="@color/BLACK"
+                        android:textColor="@color/black"
                         android:textSize="24sp" />
 
                 </LinearLayout>
@@ -100,7 +100,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="50dp"
                         android:text="@string/calorie"
-                        android:textColor="@color/BLACK"
+                        android:textColor="@color/black"
                         android:textSize="20sp"
                         android:textStyle="bold" />
 
@@ -110,7 +110,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
                         android:text="300 kcal / 100 gr"
-                        android:textColor="@color/BLACK"
+                        android:textColor="@color/black"
                         android:textSize="24sp" />
 
                 </LinearLayout>

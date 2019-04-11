@@ -9,4 +9,19 @@
         <attr name="metaButtonBarButtonStyle" format="reference" />
     </declare-styleable>
 
+    <declare-styleable name="CafeppButton">
+        <attr name="android:width" />
+        <attr name="android:height" />
+        <attr name="android:padding" />
+        <attr name="image" format="reference" />
+        <attr name="spacing" format="reference|dimension" />
+        <attr name="text" format="reference|string" />
+        <attr name="textColor" format="reference|color" />
+        <attr name="textStyle">
+            <flag name="normal" value="0" />
+            <flag name="bold" value="1" />
+            <flag name="italic" value="2" />
+        </attr>
+    </declare-styleable>
+
 </resources>

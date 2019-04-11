@@ -4,6 +4,7 @@ import android.app.admin.DeviceAdminReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.UserHandle;
 import android.util.Log;
 
 public class DeviceAdmin extends DeviceAdminReceiver {
@@ -38,17 +39,17 @@ public class DeviceAdmin extends DeviceAdminReceiver {
   }
   
   @Override
-  public void onPasswordChanged(Context context, Intent intent) {
+  public void onPasswordChanged(Context context, Intent intent, UserHandle handle) {
     log(context, "Sample Device Admin: pw changed");
   }
   
   @Override
-  public void onPasswordFailed(Context context, Intent intent) {
+  public void onPasswordFailed(Context context, Intent intent, UserHandle handle) {
     log(context, "Sample Device Admin: pw failed");
   }
   
   @Override
-  public void onPasswordSucceeded(Context context, Intent intent) {
+  public void onPasswordSucceeded(Context context, Intent intent, UserHandle handle) {
     log(context, "Sample Device Admin: pw succeeded");
   }
 }

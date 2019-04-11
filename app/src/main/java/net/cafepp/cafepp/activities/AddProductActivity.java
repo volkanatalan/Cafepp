@@ -11,9 +11,9 @@ import net.cafepp.cafepp.fragments.NewCategoryFragment;
 import net.cafepp.cafepp.fragments.NewIngredientFragment;
 import net.cafepp.cafepp.fragments.SpinnerBoxFragment;
 import net.cafepp.cafepp.interfaces.SpinnerBoxItemClick;
-import net.cafepp.cafepp.models.ChosenIngredient;
-import net.cafepp.cafepp.models.DecimalPlaceValue;
-import net.cafepp.cafepp.models.Save;
+import net.cafepp.cafepp.objects.ChosenIngredient;
+import net.cafepp.cafepp.objects.DecimalPlaceValue;
+import net.cafepp.cafepp.objects.Save;
 
 import android.annotation.SuppressLint;
 import android.support.annotation.NonNull;
@@ -514,7 +514,7 @@ public class AddProductActivity extends AppCompatActivity {
     @SuppressLint({"ViewHolder", "InflateParams"})
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
-      kategorilerView = mInflaterChosenCategories.inflate(R.layout.list_item_add_product, null);
+      kategorilerView = mInflaterChosenCategories.inflate(R.layout.list_row_add_product, null);
       final LinearLayout baseLayout = kategorilerView.findViewById(R.id.baseLayout);
       TextView textView = kategorilerView.findViewById(R.id.listItemAddProductTV);
       ImageView imageView = kategorilerView.findViewById(R.id.listItemAddProductDelete);
@@ -617,7 +617,7 @@ public class AddProductActivity extends AppCompatActivity {
         EMAunitShort = "piece";
       
       holder = new ViewHolder();
-      convertView = mInflaterChosenIngredients.inflate(R.layout.list_item_add_ingredient, null);
+      convertView = mInflaterChosenIngredients.inflate(R.layout.list_row_add_ingredient, null);
       holder.baseLayoutRL = convertView.findViewById(R.id.baseLayout);
       holder.showCB = convertView.findViewById(R.id.checkBox);
       holder.amountET = convertView.findViewById(R.id.amountET);

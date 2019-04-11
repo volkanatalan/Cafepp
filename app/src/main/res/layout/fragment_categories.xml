@@ -15,7 +15,7 @@
         android:paddingTop="50dp"
         android:text="@string/there_is_not_any_category"
         android:textAlignment="center"
-        android:textColor="@color/cafepp_white"
+        android:textColor="@color/white"
         android:textSize="24sp"
         android:visibility="gone" />
 

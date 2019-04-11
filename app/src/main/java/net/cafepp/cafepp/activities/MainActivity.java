@@ -15,13 +15,13 @@ public class MainActivity extends AppCompatActivity {
     setContentView(R.layout.activity_main);
   }
   
-  public void intentMenuActivity(View view){
-    Intent intent = new Intent(MainActivity.this, MenuActivity.class);
+  public void onClickConnectButton(View view) {
+    Intent intent = new Intent(this, ConnectActivity.class);
     startActivity(intent);
   }
   
-  public void intentAddProductActivity(View view) {
-    Intent intent = new Intent(MainActivity.this, AddProductActivity.class);
+  public void onClickAdminButton(View view) {
+    Intent intent = new Intent(this, HomeActivity.class);
     startActivity(intent);
   }
 }

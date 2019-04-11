@@ -1,4 +1,4 @@
-package net.cafepp.cafepp.models;
+package net.cafepp.cafepp.objects;
 
 /**
  * Every product has to be in a category. For example; water can be in the "Drinks" category.

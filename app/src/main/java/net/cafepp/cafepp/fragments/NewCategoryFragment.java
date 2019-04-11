@@ -30,8 +30,8 @@ import android.widget.Toast;
 import net.cafepp.cafepp.R;
 import net.cafepp.cafepp.custom_views.CircleImage;
 import net.cafepp.cafepp.databases.ProductDatabase;
-import net.cafepp.cafepp.models.Category;
-import net.cafepp.cafepp.models.Save;
+import net.cafepp.cafepp.objects.Category;
+import net.cafepp.cafepp.objects.Save;
 
 import java.io.FileDescriptor;
 import java.io.IOException;

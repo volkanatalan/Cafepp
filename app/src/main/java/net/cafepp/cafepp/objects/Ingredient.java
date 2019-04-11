@@ -1,4 +1,4 @@
-package net.cafepp.cafepp.models;
+package net.cafepp.cafepp.objects;
 
 public class Ingredient {
   private int _id;

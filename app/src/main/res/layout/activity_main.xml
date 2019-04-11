@@ -4,27 +4,63 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorPrimaryDark"
     android:orientation="vertical"
+    android:padding="20dp"
     tools:context=".activities.MainActivity">
 
-    <Button
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:background="@color/colorPrimaryDark"
-        android:onClick="intentMenuActivity"
-        android:padding="30dp"
-        android:text="Menu"
-        android:textColor="@android:color/white" />
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@drawable/choose_image_background"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="30dp">
 
-    <Button
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:scaleType="centerInside"
+            app:srcCompat="@drawable/cafepp_logo2" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/poiret_one"
+            android:text="@string/cafépp_allcaps"
+            android:textColor="@color/white"
+            android:textSize="@dimen/cafepp_font" />
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:background="@color/colorPrimaryDark"
-        android:onClick="intentAddProductActivity"
-        android:padding="30dp"
-        android:text="Add Product"
-        android:textColor="@android:color/white" />
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical">
 
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:background="@color/colorPrimary"
+            android:onClick="onClickAdminButton"
+            android:padding="@dimen/main_activity_button_padding"
+            android:text="@string/enter_as_administrator"
+            android:textColor="@color/white"
+            android:textSize="@dimen/main_activity_button_font"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimary"
+            android:onClick="onClickConnectButton"
+            android:padding="@dimen/main_activity_button_padding"
+            android:text="@string/connect_allcaps"
+            android:textColor="@color/white"
+            android:textSize="@dimen/main_activity_button_font"/>
+    </LinearLayout>
 </LinearLayout>

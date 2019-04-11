@@ -25,7 +25,7 @@ import net.cafepp.cafepp.R;
 import net.cafepp.cafepp.activities.AddProductActivity;
 import net.cafepp.cafepp.custom_views.ThreeStateCheckBox;
 import net.cafepp.cafepp.databases.ProductDatabase;
-import net.cafepp.cafepp.models.ChosenIngredient;
+import net.cafepp.cafepp.objects.ChosenIngredient;
 
 import java.util.ArrayList;
 
@@ -225,7 +225,7 @@ public class CalculateCalorieFragment extends Fragment {
     
     @Override
     public ImageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-      View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_calculate_calorie,
+      View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_row_calculate_calorie,
           parent, false);
       return new ImageViewHolder(v);
     }

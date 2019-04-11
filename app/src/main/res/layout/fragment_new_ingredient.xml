@@ -20,7 +20,7 @@
             android:id="@+id/linearLayout3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/cafepp_white"
+            android:background="@color/white"
             android:orientation="vertical"
             android:padding="32dp">
 

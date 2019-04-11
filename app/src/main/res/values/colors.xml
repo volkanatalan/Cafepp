@@ -2,15 +2,16 @@
 <resources>
     <color name="colorPrimary">#008577</color>
     <color name="colorPrimaryDark">#00574B</color>
-    <color name="colorAccent">#D81B60</color>
+    <color name="colorAccent">#00574B</color>
 
     <color name="black_overlay">#66000000</color>
     <color name="simple_yellow">#ECD078</color>
-    <color name="primary_blue">#53777A</color>
+    <color name="button_on_touch">#D3D3D3</color>
+    <color name="light_blue">#53777A</color>
     <color name="cafepp_blue">#14283a</color>
-    <color name="cafepp_white">#FFFFFF</color>
+    <color name="white">#FFFFFF</color>
     <color name="cafepp_green">#009207</color>
-    <color name="BLACK">#000000</color>
+    <color name="black">#000000</color>
     <color name="Blue_28AEE1">#28aee1</color>
     <color name="list_item_background">#AACCCCCC</color>
     <color name="app_color">#8EAE3C</color>

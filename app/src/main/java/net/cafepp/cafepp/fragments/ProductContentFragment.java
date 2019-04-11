@@ -1,28 +1,19 @@
 package net.cafepp.cafepp.fragments;
 
 import android.content.Context;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Parcelable;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import net.cafepp.cafepp.R;
 import net.cafepp.cafepp.custom_views.ImageSliderView;
 import net.cafepp.cafepp.databases.ProductDatabase;
-import net.cafepp.cafepp.models.Product;
+import net.cafepp.cafepp.objects.Product;
 
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class ProductContentFragment extends Fragment {
   private static final String PRODUCT_NAME = "PRODUCT_NAME";
