@@ -19,7 +19,6 @@ import net.cafepp.cafepp.activities.ConnectActivity;
 import net.cafepp.cafepp.connection.NSDHelper;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class ClientService extends Service {
   
@@ -100,8 +99,9 @@ public class ClientService extends Service {
     super.onDestroy();
   }
   
-  private void sendMessageToActivity(NsdServiceInfo info) {
+  private void sendMessageToActivity(String command, NsdServiceInfo info) {
     Intent intent = new Intent("ClientService");
+    intent.putExtra("Command", command);
     Bundle bundle = new Bundle();
     bundle.putParcelable("Message", info);
     intent.putExtra("Message", bundle);
@@ -123,7 +123,7 @@ public class ClientService extends Service {
       @Override
       public void onServiceLost(NsdServiceInfo service) {
         Log.d(TAG, "Lost service: " + service.getServiceName());
-        foundDevices.clear();
+        sendMessageToActivity("CLEAR", null);
         if (!isRestartingDiscovery) restartDiscovery();
       }
       
@@ -157,8 +157,7 @@ public class ClientService extends Service {
     nsdHelper.setResolveListener(new NSDHelper.ResolveListener() {
       @Override
       public void onResolved(final NsdServiceInfo serviceInfo) {
-        foundDevices.add(serviceInfo);
-        sendMessageToActivity(serviceInfo);
+        sendMessageToActivity("ADD", serviceInfo);
       }
       
       @Override

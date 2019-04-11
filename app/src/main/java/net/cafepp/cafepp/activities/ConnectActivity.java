@@ -1,12 +1,15 @@
 package net.cafepp.cafepp.activities;
 
 import android.app.ActivityManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.nsd.NsdServiceInfo;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -25,11 +28,9 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import net.cafepp.cafepp.R;
-import net.cafepp.cafepp.connection.NSDHelper;
 import net.cafepp.cafepp.fragments.ConnectFragment;
 import net.cafepp.cafepp.services.ClientService;
 import net.cafepp.cafepp.services.Constants;
-import net.cafepp.cafepp.services.ServerService;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -55,6 +56,9 @@ public class ConnectActivity extends AppCompatActivity {
     
     configureRecyclerView();
   
+    LocalBroadcastManager.getInstance(this).registerReceiver(
+        mMessageReceiver, new IntentFilter("ClientService"));
+  
   
     boolean isServiceRunning = isServiceRunningInForeground(this, ClientService.class);
     switchFindDevices.setChecked(isServiceRunning);
@@ -73,7 +77,8 @@ public class ConnectActivity extends AppCompatActivity {
         Intent stopIntent = new Intent(this, ClientService.class);
         stopIntent.setAction(Constants.ACTION.STOP_ACTION);
         startService(stopIntent);
-        
+  
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
         foundDevicesAdapter.clear();
       }
     });
@@ -89,6 +94,18 @@ public class ConnectActivity extends AppCompatActivity {
     
     deviceNameTextView.setText(deviceName);
   }
+  
+  private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      // Get extra data included in the Intent
+      String command = intent.getStringExtra("Command");
+      NsdServiceInfo info = intent.getBundleExtra("Message").getParcelable("Message");
+      Log.d(TAG, "BroadcastReceiver command: " + command);
+      if (command.equals("ADD")) foundDevicesAdapter.add(info);
+      else if (command.equals("CLEAR")) foundDevicesAdapter.clear();
+    }
+  };
   
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
