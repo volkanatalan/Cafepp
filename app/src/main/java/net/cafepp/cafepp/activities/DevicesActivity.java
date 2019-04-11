@@ -35,7 +35,6 @@ public class DevicesActivity extends AppCompatActivity
   ListView registeredDevicesListView;
   DevicesListViewAdapter adapter;
   Switch connectSwitch;
-  CafeppButton addDeviceButton;
   DeviceDatabase deviceDatabase;
   
   @Override
@@ -44,16 +43,12 @@ public class DevicesActivity extends AppCompatActivity
     setContentView(R.layout.activity_devices);
     registeredDevicesListView = findViewById(R.id.registeredDevicesListView);
     connectSwitch = findViewById(R.id.connectSwitch);
-    addDeviceButton = findViewById(R.id.addDeviceButton);
   
     boolean isServiceRunning = isServiceRunningInForeground(this, ServerService.class);
     Log.d(TAG, "isServiceRunning: " + isServiceRunning);
   
     connectSwitch.setChecked(isServiceRunning);
     setCheckedChangeListener(connectSwitch);
-    
-    if (isServiceRunning) addDeviceButton.setVisibility(View.VISIBLE);
-    else addDeviceButton.setVisibility(View.GONE);
     
     Toolbar toolbar = findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
@@ -160,13 +155,11 @@ public class DevicesActivity extends AppCompatActivity
         Intent startIntent = new Intent(this, ServerService.class);
         startIntent.setAction(Constants.ACTION.START_ACTION);
         startService(startIntent);
-        addDeviceButton.setVisibility(View.VISIBLE);
       } else {
         Log.d(TAG, "Switch checked false");
         Intent stopIntent = new Intent(this, ServerService.class);
         stopIntent.setAction(Constants.ACTION.STOP_ACTION);
         startService(stopIntent);
-        addDeviceButton.setVisibility(View.GONE);
         
       }
     });
