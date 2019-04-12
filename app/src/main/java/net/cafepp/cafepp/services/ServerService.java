@@ -32,12 +32,12 @@ public class ServerService extends Service {
         notificationIntent.setAction(Constants.ACTION.MAIN_ACTION);
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                                         | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(
+        PendingIntent pNotificationIntent = PendingIntent.getActivity(
             this, 0, notificationIntent, 0);
     
         Intent stopIntent = new Intent(this, ServerService.class);
         stopIntent.setAction(Constants.ACTION.STOP_ACTION);
-        PendingIntent pstopIntent = PendingIntent.getActivity(
+        PendingIntent pStopIntent = PendingIntent.getActivity(
             this, 0, stopIntent, 0);
         
         Bitmap icon = BitmapFactory.decodeResource(getResources(), R.mipmap.app_icon_round);
@@ -50,9 +50,9 @@ public class ServerService extends Service {
                                         .setSmallIcon(R.drawable.wifi)
                                         .setLargeIcon(Bitmap.createScaledBitmap(
                                             icon, 128, 128, false))
-                                        .setContentIntent(pendingIntent)
+                                        .setContentIntent(pNotificationIntent)
                                         .setOngoing(true)
-                                        .addAction(R.drawable.stop, getString(R.string.stop), pstopIntent)
+                                        .addAction(R.drawable.stop, getString(R.string.stop), pStopIntent)
                                         .build();
         startForeground(Constants.NOTIFICATION_ID.SERVER_SERVICE, notification);
   
