@@ -1,9 +1,12 @@
 package net.cafepp.cafepp.connection;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.util.Log;
+
+import net.cafepp.cafepp.R;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -52,12 +55,16 @@ public class ServerThread implements Runnable {
   }
   
   private void registerService() {
+  
+    // Get device name.
+    SharedPreferences sharedPreferences = context.getSharedPreferences("ConnectSettings", Context.MODE_PRIVATE);
+    String deviceName = sharedPreferences.getString("deviceName", context.getString(R.string.cafepp_device));
     // Create the NsdServiceInfo object, and populate it.
     NsdServiceInfo serviceInfo = new NsdServiceInfo();
     
     // The name is subject to change based on conflicts
     // with other services advertised on the same network.
-    serviceInfo.setServiceName("Main Machine");
+    serviceInfo.setServiceName(deviceName);
     serviceInfo.setServiceType("_cafepp._tcp.");
     serviceInfo.setPort(port);
   
