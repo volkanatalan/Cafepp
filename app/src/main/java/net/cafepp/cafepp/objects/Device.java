@@ -6,19 +6,20 @@ import java.net.InetAddress;
 
 public class Device {
   private NsdServiceInfo nsdServiceInfo = new NsdServiceInfo();
-  private String hostAddress;
-  private String mac;
+  private String ipAddress;
+  private String macAddress;
+  private int pairKey;
   private boolean isConnected = false;
   
   public Device() {
   }
   
   public Device(String serviceName) {
-    setServiceName(serviceName);
+    setDeviceName(serviceName);
   }
   
-  public Device(NsdServiceInfo info){
-    nsdServiceInfo = info;
+  public Device(NsdServiceInfo nsdServiceInfo){
+    this.nsdServiceInfo = nsdServiceInfo;
   }
   
   public NsdServiceInfo getNsdServiceInfo() {
@@ -29,11 +30,11 @@ public class Device {
     this.nsdServiceInfo = nsdServiceInfo;
   }
   
-  public String getServiceName() {
+  public String getDeviceName() {
     return nsdServiceInfo.getServiceName();
   }
   
-  public void setServiceName(String name) {
+  public void setDeviceName(String name) {
     nsdServiceInfo.setServiceName(name);
   }
   
@@ -53,12 +54,12 @@ public class Device {
     nsdServiceInfo.setHost(host);
   }
   
-  public String getHostAddress() {
-    return hostAddress;
+  public String getIpAddress() {
+    return ipAddress;
   }
   
-  public void setHostAddress(String hostAddress) {
-    this.hostAddress = hostAddress;
+  public void setIpAddress(String ipAddress) {
+    this.ipAddress = ipAddress;
   }
   
   public int getPort() {
@@ -69,12 +70,20 @@ public class Device {
     nsdServiceInfo.setPort(port);
   }
   
-  public String getMac() {
-    return mac;
+  public String getMacAddress() {
+    return macAddress;
   }
   
-  public void setMac(String mac) {
-    this.mac = mac;
+  public void setMacAddress(String macAddress) {
+    this.macAddress = macAddress;
+  }
+  
+  public int getPairKey() {
+    return pairKey;
+  }
+  
+  public void setPairKey(int pairKey) {
+    this.pairKey = pairKey;
   }
   
   public boolean isConnected() {

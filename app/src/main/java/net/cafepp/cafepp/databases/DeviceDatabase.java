@@ -45,9 +45,9 @@ public class DeviceDatabase extends SQLiteOpenHelper {
   }
   
   public void add(Device device) {
-    String deviceName = device.getServiceName();
-    String mac = device.getMac();
-    String ip = device.getHostAddress();
+    String deviceName = device.getDeviceName();
+    String mac = device.getMacAddress();
+    String ip = device.getIpAddress();
     
     SQLiteDatabase db = this.getWritableDatabase();
     ContentValues values = new ContentValues();
@@ -66,9 +66,9 @@ public class DeviceDatabase extends SQLiteOpenHelper {
     while (c.moveToNext()) {
       Device device = new Device();
       
-      device.setServiceName(c.getString(c.getColumnIndex(COLUMN_DEVICE_NAME)));
-      device.setHostAddress(c.getString(c.getColumnIndex(COLUMN_DEVICE_IP)));
-      device.setMac(c.getString(c.getColumnIndex(COLUMN_DEVICE_MAC)));
+      device.setDeviceName(c.getString(c.getColumnIndex(COLUMN_DEVICE_NAME)));
+      device.setIpAddress(c.getString(c.getColumnIndex(COLUMN_DEVICE_IP)));
+      device.setMacAddress(c.getString(c.getColumnIndex(COLUMN_DEVICE_MAC)));
       
       devices.add(device);
     }
