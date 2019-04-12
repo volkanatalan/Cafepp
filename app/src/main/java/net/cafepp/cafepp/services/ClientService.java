@@ -18,16 +18,12 @@ import net.cafepp.cafepp.R;
 import net.cafepp.cafepp.activities.ConnectActivity;
 import net.cafepp.cafepp.connection.NSDHelper;
 
-import java.util.ArrayList;
-
 public class ClientService extends Service {
   
   private static final String TAG = "ClientService";
   private Context context;
-  private String deviceName;
   private NSDHelper nsdHelper;
   private boolean isRestartingDiscovery = false;
-  private ArrayList<NsdServiceInfo> foundDevices = new ArrayList<>();
   
   
   public ClientService() {
@@ -45,8 +41,6 @@ public class ClientService extends Service {
       if (intent.getAction().equals(Constants.ACTION.START_ACTION)) {
   
         Log.i(TAG, "Client Service Start Action entered.");
-  
-        deviceName = intent.getStringExtra("deviceName");
         
         Intent notificationIntent = new Intent(this, ConnectActivity.class);
         notificationIntent.setAction(Constants.ACTION.MAIN_ACTION);
@@ -100,6 +94,7 @@ public class ClientService extends Service {
   }
   
   private void sendMessageToActivity(String command, NsdServiceInfo info) {
+    Log.i(TAG, "Message sending to activity");
     Intent intent = new Intent("ClientService");
     intent.putExtra("Command", command);
     Bundle bundle = new Bundle();
@@ -158,10 +153,6 @@ public class ClientService extends Service {
       @Override
       public void onResolved(final NsdServiceInfo serviceInfo) {
         sendMessageToActivity("ADD", serviceInfo);
-      }
-      
-      @Override
-      public void onResolvedMyDevice(NsdServiceInfo serviceInfo) {
       }
       
       @Override

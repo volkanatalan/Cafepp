@@ -68,7 +68,6 @@ public class ConnectActivity extends AppCompatActivity {
       if (isChecked) {
         Log.d(TAG, "Switch checked true");
         Intent startIntent = new Intent(this, ClientService.class);
-        startIntent.putExtra("deviceName", deviceName);
         startIntent.setAction(Constants.ACTION.START_ACTION);
         startService(startIntent);
         

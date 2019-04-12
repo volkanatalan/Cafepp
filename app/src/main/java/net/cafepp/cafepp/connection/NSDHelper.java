@@ -234,7 +234,6 @@ public class NSDHelper {
         if (serviceInfo.getHost() != null) {
           if (serviceInfo.getHost().getHostAddress().equals(ip) && resolveListener != null) {
             Log.d(TAG, "It's my device.");
-            resolveListener.onResolvedMyDevice(serviceInfo);
             
           } else if (resolveListener != null)
             resolveListener.onResolved(serviceInfo);
@@ -288,7 +287,6 @@ public class NSDHelper {
   
   public interface ResolveListener {
     void onResolved(NsdServiceInfo serviceInfo);
-    void onResolvedMyDevice(NsdServiceInfo serviceInfo);
     void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode);
   }
   

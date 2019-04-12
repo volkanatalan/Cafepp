@@ -7,14 +7,12 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.Socket;
 
 public class ServerThread implements Runnable {
   private final String TAG = "ServerThread";
   private Context context;
   private NsdManager nsdManager;
   private NsdManager.RegistrationListener registrationListener;
-  private NsdServiceInfo serviceInfo;
   private ServerSocket serverSocket;
   private int port;
   
@@ -55,11 +53,11 @@ public class ServerThread implements Runnable {
   
   private void registerService() {
     // Create the NsdServiceInfo object, and populate it.
-    serviceInfo = new NsdServiceInfo();
+    NsdServiceInfo serviceInfo = new NsdServiceInfo();
     
     // The name is subject to change based on conflicts
     // with other services advertised on the same network.
-    serviceInfo.setServiceName("Ana Makina");
+    serviceInfo.setServiceName("Main Machine");
     serviceInfo.setServiceType("_cafepp._tcp.");
     serviceInfo.setPort(port);
   
