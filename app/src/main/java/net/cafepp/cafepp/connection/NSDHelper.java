@@ -268,12 +268,8 @@ public class NSDHelper {
         
         // If resolving is already active try again.
         if (errorCode == 3) {
-          if (!NSDHelper.this.serviceName.equals(serviceName)) {
-            
-            Log.i(TAG, "Trying to resolve \"" + serviceName + "\" again.");
-            nsdManager.resolveService(serviceInfo, this);
-            
-          } else Log.i(TAG, "It'i my device. Not trying to resolve again.");
+          Log.i(TAG, "Trying to resolve \"" + serviceName + "\" again.");
+          nsdManager.resolveService(serviceInfo, this);
         }
         
         // Call ResolveListener interface.
