@@ -27,11 +27,7 @@ public class ClientService extends Service {
   
   
   public ClientService() {
-  
-  }
-  
-  public ClientService(Context context) {
-    this.context = context;
+    context = this;
   }
   
   @Override

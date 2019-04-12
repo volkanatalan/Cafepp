@@ -16,7 +16,7 @@ public class NSDHelper {
   private Context context;
   private final String TAG = "NSDHelper";
   private final String SERVICE_TYPE = "_cafepp._tcp.";
-  private String serviceName;
+  private String serviceName = "";
   private String ip;
   private int localPort;
   private ServerSocket serverSocket;
@@ -62,14 +62,18 @@ public class NSDHelper {
   }
   
   public void startDiscovery(){
+    Log.i(TAG, "Discovery starting...");
     initializeDiscoveryListener();
-    nsdManager.discoverServices(
-        SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, NSDDiscoveryListener);
+    nsdManager.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, NSDDiscoveryListener);
   }
   
   public void stopDiscovery() {
-    if (isOnDiscovery)
+    if (isOnDiscovery) {
+      Log.i(TAG, "Discovery stopping...");
       nsdManager.stopServiceDiscovery(NSDDiscoveryListener);
+      
+    } else
+      Log.i(TAG, "It's not discovering already.");
   }
   
   /**
@@ -172,8 +176,7 @@ public class NSDHelper {
       
       @Override
       public void onServiceFound(NsdServiceInfo serviceInfo) {
-        // A service was found! Do something with it.
-        Log.d(TAG, "Service discovery success! " + serviceInfo.getServiceName());
+        Log.d(TAG, "A service found! " + serviceInfo.toString());
         
         if (discoveryListener != null) discoveryListener.onServiceFound(serviceInfo);
         
@@ -183,7 +186,7 @@ public class NSDHelper {
           
           else {
             // Service type is the string containing the protocol and transport layer for this service.
-            Log.d(TAG, "Same service type: " + serviceInfo.toString());
+            Log.d(TAG, "Same service type: " + serviceInfo.getServiceName());
             nsdManager.resolveService(serviceInfo, initializeResolveListener());
           }
         }
@@ -245,25 +248,35 @@ public class NSDHelper {
       @Override
       public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode) {
         // Called when the resolve fails. Use the error code to debug.
+        String serviceName = serviceInfo.getServiceName();
         String errorMessage = "Error code " + errorCode + ": ";
         
         switch (errorCode){
           case 0:
-            errorMessage += "Internal error. " + serviceInfo.getServiceName();
+            errorMessage += "Internal error!";
             break;
           case 3:
-            errorMessage += "It is already active: " + serviceInfo.getServiceName();
-            
-            // Try again.
-            if (ip != null && serviceInfo.getHost() != null && !serviceInfo.getHost().getHostAddress().equals(ip))
-              nsdManager.resolveService(serviceInfo, this);
+            errorMessage += "It is already active!";
             break;
           case 4:
-            errorMessage += "Maximum outstanding requests from the applications have reached. " +
-                                serviceInfo.getServiceName();
+            errorMessage += "Maximum outstanding requests from the applications have reached.";
             break;
         }
-        Log.e(TAG, "Resolve failed: " + errorMessage);
+        
+        Log.e(TAG, "Resolve failed for: " + serviceName + " " + errorMessage);
+  
+        
+        // If resolving is already active try again.
+        if (errorCode == 3) {
+          if (!NSDHelper.this.serviceName.equals(serviceName)) {
+            
+            Log.i(TAG, "Trying to resolve \"" + serviceName + "\" again.");
+            nsdManager.resolveService(serviceInfo, this);
+            
+          } else Log.i(TAG, "It'i my device. Not trying to resolve again.");
+        }
+        
+        // Call ResolveListener interface.
         if (resolveListener != null) resolveListener.onResolveFailed(serviceInfo, errorCode);
       }
     };

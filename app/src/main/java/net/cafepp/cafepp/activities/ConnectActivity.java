@@ -55,9 +55,6 @@ public class ConnectActivity extends AppCompatActivity {
     
     configureRecyclerView();
   
-    LocalBroadcastManager.getInstance(this).registerReceiver(
-        mMessageReceiver, new IntentFilter("ClientService"));
-  
   
     boolean isServiceRunning = isServiceRunningInForeground(this, ClientService.class);
     switchFindDevices.setChecked(isServiceRunning);
@@ -69,6 +66,10 @@ public class ConnectActivity extends AppCompatActivity {
         Intent startIntent = new Intent(this, ClientService.class);
         startIntent.setAction(Constants.ACTION.START_ACTION);
         startService(startIntent);
+  
+        // Listen for the commands from Client Service.
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+            mMessageReceiver, new IntentFilter("ClientService"));
         
       } else {
         Log.d(TAG, "Switch checked false");
@@ -76,6 +77,7 @@ public class ConnectActivity extends AppCompatActivity {
         stopIntent.setAction(Constants.ACTION.STOP_ACTION);
         startService(stopIntent);
   
+        // Stop listening for the commands from Client Service.
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
         foundDevicesAdapter.clear();
       }
@@ -91,6 +93,15 @@ public class ConnectActivity extends AppCompatActivity {
     String deviceName = sharedPreferences.getString("deviceName", getString(R.string.cafepp_device));
     
     deviceNameTextView.setText(deviceName);
+  }
+  
+  @Override
+  protected void onDestroy() {
+    super.onDestroy();
+    
+    // Stop listening for the commands from Client Service.
+    LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+    foundDevicesAdapter.clear();
   }
   
   private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
