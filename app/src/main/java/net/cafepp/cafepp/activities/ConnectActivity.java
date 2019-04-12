@@ -39,7 +39,6 @@ import java.util.List;
 public class ConnectActivity extends AppCompatActivity {
   
   private final String TAG = "ConnectActivity";
-  private String deviceName;
   private TextView deviceNameTextView;
   private RecyclerView recyclerView;
   private FoundDevicesAdapter foundDevicesAdapter;
@@ -89,7 +88,7 @@ public class ConnectActivity extends AppCompatActivity {
   
     // Get device name.
     SharedPreferences sharedPreferences = getSharedPreferences("ConnectSettings", Context.MODE_PRIVATE);
-    deviceName = sharedPreferences.getString("deviceName", getString(R.string.cafepp_device));
+    String deviceName = sharedPreferences.getString("deviceName", getString(R.string.cafepp_device));
     
     deviceNameTextView.setText(deviceName);
   }
