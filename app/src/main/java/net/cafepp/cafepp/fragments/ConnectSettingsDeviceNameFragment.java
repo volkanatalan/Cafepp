@@ -12,7 +12,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import net.cafepp.cafepp.R;
-import net.cafepp.cafepp.activities.ConnectSettingsActivity;
+import net.cafepp.cafepp.activities.ConnectActivity;
 
 public class ConnectSettingsDeviceNameFragment extends Fragment {
   
@@ -55,13 +55,14 @@ public class ConnectSettingsDeviceNameFragment extends Fragment {
           "ConnectSettings", Context.MODE_PRIVATE).edit();
       editor.putString("deviceName", deviceName);
       editor.apply();
-      ((ConnectSettingsActivity) getActivity()).deviceName.setText(deviceName);
-      ((ConnectSettingsActivity) getActivity()).interlayer.setVisibility(View.GONE);
+      
+      ((ConnectActivity) getActivity()).deviceNameTextView.setText(deviceName);
+      ((ConnectActivity) getActivity()).interlayer.setVisibility(View.GONE);
       getActivity().onBackPressed();
     });
     
     cancelTextView.setOnClickListener(v -> {
-      ((ConnectSettingsActivity) getActivity()).interlayer.setVisibility(View.GONE);
+      ((ConnectActivity) getActivity()).interlayer.setVisibility(View.GONE);
       getActivity().onBackPressed();
     });
   }

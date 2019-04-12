@@ -18,8 +18,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -29,6 +27,8 @@ import android.widget.TextView;
 
 import net.cafepp.cafepp.R;
 import net.cafepp.cafepp.fragments.ConnectFragment;
+import net.cafepp.cafepp.fragments.ConnectSettingsDeviceNameFragment;
+import net.cafepp.cafepp.objects.Device;
 import net.cafepp.cafepp.services.ClientService;
 import net.cafepp.cafepp.services.Constants;
 
@@ -39,7 +39,7 @@ import java.util.List;
 public class ConnectActivity extends AppCompatActivity {
   
   private final String TAG = "ConnectActivity";
-  private TextView deviceNameTextView;
+  public TextView deviceNameTextView;
   private RecyclerView recyclerView;
   private FoundDevicesAdapter foundDevicesAdapter;
   private View.OnClickListener mOnClickListener;
@@ -51,6 +51,7 @@ public class ConnectActivity extends AppCompatActivity {
     setContentView(R.layout.activity_connect);
     deviceNameTextView = findViewById(R.id.deviceNameTextView);
     recyclerView = findViewById(R.id.recyclerView);
+    interlayer = findViewById(R.id.interlayer);
     Switch switchFindDevices = findViewById(R.id.switchFindDevices);
     
     configureRecyclerView();
@@ -116,23 +117,6 @@ public class ConnectActivity extends AppCompatActivity {
     }
   };
   
-  @Override
-  public boolean onCreateOptionsMenu(Menu menu) {
-    getMenuInflater().inflate(R.menu.settings, menu);
-    return true;
-  }
-  
-  @Override
-  public boolean onOptionsItemSelected(MenuItem item) {
-    switch (item.getItemId()) {
-      case R.id.action_settings:
-        Intent intent = new Intent(this, ConnectSettingsActivity.class);
-        startActivity(intent);
-        return true;
-    }
-    return super.onOptionsItemSelected(item);
-  }
-  
   private void configureRecyclerView() {
     foundDevicesAdapter = new FoundDevicesAdapter();
     RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
@@ -143,7 +127,7 @@ public class ConnectActivity extends AppCompatActivity {
       int pos = recyclerView.indexOfChild(v);
       Log.d(TAG, "pos: " + pos);
 
-      FoundDevicesAdapter.Device device = foundDevicesAdapter.getItem(pos);
+      Device device = foundDevicesAdapter.getItem(pos);
       String deviceName = device.getNsdServiceInfo().getServiceName();
       
       FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -153,7 +137,6 @@ public class ConnectActivity extends AppCompatActivity {
       ft.addToBackStack("ConnectFragment");
       ft.commit();
 
-      interlayer = findViewById(R.id.interlayer);
       interlayer.setVisibility(View.VISIBLE);
     });
     recyclerView.setAdapter(foundDevicesAdapter);
@@ -167,6 +150,16 @@ public class ConnectActivity extends AppCompatActivity {
       }
     }
     return false;
+  }
+  
+  public void onClickChangeDeviceName(View view) {
+    interlayer.setVisibility(View.VISIBLE);
+    FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+    ft.setCustomAnimations(R.anim.enter_from_bottom, R.anim.exit_to_top,
+        R.anim.enter_from_bottom, R.anim.exit_to_top);
+    ft.replace(R.id.fragmentContainer, new ConnectSettingsDeviceNameFragment());
+    ft.addToBackStack("ConnectActivity");
+    ft.commit();
   }
   
   private class FoundDevicesAdapter extends RecyclerView.Adapter<FoundDevicesAdapter.ViewHolder> {
@@ -187,32 +180,6 @@ public class ConnectActivity extends AppCompatActivity {
         wifi = view.findViewById(R.id.connectImageView);
       }
     }
-  
-    class Device {
-      private NsdServiceInfo nsdServiceInfo;
-      private boolean isConnected = false;
-      
-      Device(NsdServiceInfo info){
-        nsdServiceInfo = info;
-      }
-  
-      NsdServiceInfo getNsdServiceInfo() {
-        return nsdServiceInfo;
-      }
-  
-      void setNsdServiceInfo(NsdServiceInfo nsdServiceInfo) {
-        this.nsdServiceInfo = nsdServiceInfo;
-      }
-  
-      boolean isConnected() {
-        return isConnected;
-      }
-  
-      void setConnected(boolean connected) {
-        isConnected = connected;
-      }
-    }
-    
     
     @NonNull
     @Override
@@ -281,14 +248,14 @@ public class ConnectActivity extends AppCompatActivity {
   
     boolean hasIP(InetAddress ip) {
       for (Device device : devices)
-        if (device.nsdServiceInfo.getHost().getHostAddress().equals(ip.getHostAddress()))
+        if (device.getNsdServiceInfo().getHost().getHostAddress().equals(ip.getHostAddress()))
           return true;
       return false;
     }
   
     boolean hasName(String serviceName) {
       for (Device device : devices) {
-        if (device.nsdServiceInfo.getServiceName().equals(serviceName)) return true;
+        if (device.getNsdServiceInfo().getServiceName().equals(serviceName)) return true;
       }
       return false;
     }

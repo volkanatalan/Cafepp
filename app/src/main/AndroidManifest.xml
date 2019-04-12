@@ -28,10 +28,6 @@
             android:theme="@style/AppTheme.NoActionBar" />
 
         <activity
-            android:name=".activities.ConnectSettingsActivity"
-            android:label="@string/connection_settings" />
-
-        <activity
             android:name=".activities.ConnectActivity"
             android:label="@string/connect"
             android:theme="@style/AppTheme"

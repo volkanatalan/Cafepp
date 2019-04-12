@@ -68,5 +68,8 @@
     <string name="client">Client</string>
     <string name="server">Server</string>
     <string name="add_devices">Add Devices</string>
+    <string name="my_device">My Device</string>
+    <string name="available_devices">Available Devices</string>
+    <string name="paired_devices">Paired Devices</string>
 
 </resources>
