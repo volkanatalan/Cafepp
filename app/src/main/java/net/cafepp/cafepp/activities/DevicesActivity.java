@@ -14,13 +14,11 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ListView;
 import android.widget.Switch;
 
 import net.cafepp.cafepp.R;
 import net.cafepp.cafepp.adapters.DevicesListViewAdapter;
-import net.cafepp.cafepp.custom_views.CafeppButton;
 import net.cafepp.cafepp.databases.DeviceDatabase;
 import net.cafepp.cafepp.objects.Device;
 import net.cafepp.cafepp.services.ServerService;
@@ -32,17 +30,13 @@ public class DevicesActivity extends AppCompatActivity
     implements NavigationView.OnNavigationItemSelectedListener {
   
   private final String TAG = "DevicesActivity";
-  ListView registeredDevicesListView;
-  DevicesListViewAdapter adapter;
-  Switch connectSwitch;
-  DeviceDatabase deviceDatabase;
   
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_devices);
-    registeredDevicesListView = findViewById(R.id.registeredDevicesListView);
-    connectSwitch = findViewById(R.id.connectSwitch);
+    ListView registeredDevicesListView = findViewById(R.id.registeredDevicesListView);
+    Switch connectSwitch = findViewById(R.id.connectSwitch);
   
     boolean isServiceRunning = isServiceRunningInForeground(this, ServerService.class);
     Log.d(TAG, "isServiceRunning: " + isServiceRunning);
@@ -62,7 +56,7 @@ public class DevicesActivity extends AppCompatActivity
     NavigationView navigationView = findViewById(R.id.nav_view);
     navigationView.setNavigationItemSelectedListener(this);
   
-    deviceDatabase = new DeviceDatabase(getApplicationContext());
+    DeviceDatabase deviceDatabase = new DeviceDatabase(getApplicationContext());
   
     if (deviceDatabase.getDevices().size() == 0) {
       deviceDatabase.add(new Device("Aşçı"));
@@ -73,7 +67,7 @@ public class DevicesActivity extends AppCompatActivity
     }
   
     List<Device> devices = deviceDatabase.getDevices();
-    adapter = new DevicesListViewAdapter(devices, false);
+    DevicesListViewAdapter adapter = new DevicesListViewAdapter(devices, false);
   
     registeredDevicesListView.setAdapter(adapter);
     adapter.setConnected(1, true);
@@ -140,12 +134,6 @@ public class DevicesActivity extends AppCompatActivity
     DrawerLayout drawer = findViewById(R.id.drawer_layout);
     drawer.closeDrawer(GravityCompat.START);
     return true;
-  }
-  
-  private void setClickListener(View view) {
-    view.setOnClickListener(v -> {
-    
-    });
   }
   
   private void setCheckedChangeListener(Switch s) {
