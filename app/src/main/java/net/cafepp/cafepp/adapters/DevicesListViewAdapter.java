@@ -63,13 +63,13 @@ public class DevicesListViewAdapter extends BaseAdapter {
     }
     
     Device device = devices.get(position);
-    viewHolder.deviceName.setText(device.getNsdServiceInfo().getServiceName());
+    viewHolder.deviceName.setText(device.getDeviceName());
     
     if (device.isConnected()) viewHolder.connectImage.setImageResource(R.drawable.wifi);
     else viewHolder.connectImage.setImageResource(R.drawable.wifi_disconnected);
   
     if (showIP) {
-      viewHolder.ip.setText(device.getNsdServiceInfo().getHost().getHostAddress());
+      viewHolder.ip.setText(device.getIpAddress());
       viewHolder.ip.setVisibility(View.VISIBLE);
     } else viewHolder.ip.setVisibility(View.GONE);
     

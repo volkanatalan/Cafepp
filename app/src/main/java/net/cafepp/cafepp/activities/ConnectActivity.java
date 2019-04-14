@@ -2,11 +2,17 @@ package net.cafepp.cafepp.activities;
 
 import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.net.nsd.NsdServiceInfo;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
@@ -30,7 +36,6 @@ import net.cafepp.cafepp.fragments.ConnectFragment;
 import net.cafepp.cafepp.fragments.ConnectSettingsDeviceNameFragment;
 import net.cafepp.cafepp.objects.Device;
 import net.cafepp.cafepp.services.ClientService;
-import net.cafepp.cafepp.services.Constants;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -44,6 +49,8 @@ public class ConnectActivity extends AppCompatActivity {
   private FoundDevicesAdapter foundDevicesAdapter;
   private View.OnClickListener mOnClickListener;
   public FrameLayout interlayer;
+  Messenger messenger = null;
+  private boolean bound = false;
   
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -64,19 +71,20 @@ public class ConnectActivity extends AppCompatActivity {
     switchFindDevices.setOnCheckedChangeListener((buttonView, isChecked) -> {
       if (isChecked) {
         Log.d(TAG, "Switch checked true");
-        Intent startIntent = new Intent(this, ClientService.class);
-        startIntent.setAction(Constants.ACTION.START_ACTION);
-        startService(startIntent);
+        Intent clientServiceIntent = new Intent(this, ClientService.class);
+        bindService(clientServiceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
   
         // Listen for the commands from Client Service.
         LocalBroadcastManager.getInstance(this).registerReceiver(
             mMessageReceiver, new IntentFilter("ClientService"));
         
       } else {
-        Log.d(TAG, "Switch checked false");
-        Intent stopIntent = new Intent(this, ClientService.class);
-        stopIntent.setAction(Constants.ACTION.STOP_ACTION);
-        startService(stopIntent);
+  
+        // Unbind from the service
+        if (bound) {
+          unbindService(serviceConnection);
+          bound = false;
+        }
   
         // Stop listening for the commands from Client Service.
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
@@ -105,6 +113,49 @@ public class ConnectActivity extends AppCompatActivity {
     foundDevicesAdapter.clear();
   }
   
+  private void sendMessageToClientService(Object message) {
+    if (!bound) {
+      Log.e(TAG, "Service not bound!");
+      return;
+    }
+    
+    // Create and send a message to the service, using a supported 'what' value
+    Message msg = new Message();
+    msg.obj = message;
+    try {
+      messenger.send(msg);
+      Log.i(TAG, "Message sent to Client Service!");
+    } catch (RemoteException e) {
+      e.printStackTrace();
+    }
+    
+  }
+  
+  /** Defines callbacks for service binding, passed to bindService() */
+  private ServiceConnection serviceConnection = new ServiceConnection() {
+    
+    @Override
+    public void onServiceConnected(ComponentName className,
+                                   IBinder service) {
+      // This is called when the connection with the service has been
+      // established, giving us the object we can use to
+      // interact with the service.  We are communicating with the
+      // service using a Messenger, so here we get a client-side
+      // representation of that from the raw IBinder object.
+      messenger = new Messenger(service);
+      bound = true;
+    }
+    
+    @Override
+    public void onServiceDisconnected(ComponentName arg0) {
+      // This is called when the connection with the service has been
+      // unexpectedly disconnected -- that is, its process crashed.
+      messenger = null;
+      bound = false;
+    }
+    
+  };
+  
   private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -128,11 +179,11 @@ public class ConnectActivity extends AppCompatActivity {
       Log.d(TAG, "pos: " + pos);
 
       Device device = foundDevicesAdapter.getItem(pos);
-      String deviceName = device.getNsdServiceInfo().getServiceName();
+      String deviceName = device.getDeviceName();
       
       FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-      ft.setCustomAnimations(R.anim.enter_from_bottom, R.anim.exit_to_left,
-          R.anim.enter_from_bottom, R.anim.exit_to_left);
+      ft.setCustomAnimations(R.anim.enter_from_bottom, R.anim.exit_to_top,
+          R.anim.enter_from_bottom, R.anim.exit_to_top);
       ft.replace(R.id.fragmentContainer, ConnectFragment.newInstance(deviceName), "ConnectFragment");
       ft.addToBackStack("ConnectFragment");
       ft.commit();
@@ -193,9 +244,8 @@ public class ConnectActivity extends AppCompatActivity {
   
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
-      NsdServiceInfo service = devices.get(i).getNsdServiceInfo();
-      viewHolder.deviceName.setText(service.getServiceName());
-      viewHolder.ip.setText(service.getHost().getHostAddress());
+      viewHolder.deviceName.setText(devices.get(i).getDeviceName());
+      viewHolder.ip.setText(devices.get(i).getIpAddress());
       
       // If a device is connected, show a wifi image to indicate this.
       if (devices.get(i).isConnected())
@@ -208,26 +258,29 @@ public class ConnectActivity extends AppCompatActivity {
     }
   
     void add(NsdServiceInfo serviceInfo) {
+      String serviceName = "";
+      
       if (hasIP(serviceInfo.getHost())){
         // If a service with the same ip has found, don't add it to the list.
         Log.d(TAG, "Same service: " + serviceInfo.getServiceName());
         return;
-        
+  
       } else if (hasName(serviceInfo.getServiceName())){
         // If a service with the same name but different ip has found, change its name.
         Log.d(TAG, "Service with the same name but different ip: " + serviceInfo.getServiceName());
-        String serviceName = serviceInfo.getServiceName();
+        serviceName = serviceInfo.getServiceName();
         int i = 1;
   
         while (hasName(serviceName)) {
           i++;
           serviceName += " (" + i + ")";
         }
-  
-        serviceInfo.setServiceName(serviceName);
       }
+      String serviceType = serviceInfo.getServiceType();
+      String ipAddress = serviceInfo.getHost().getHostAddress();
+      int port = serviceInfo.getPort();
       
-      devices.add(new Device(serviceInfo));
+      devices.add(new Device(serviceName, serviceType, ipAddress, port));
       Log.d(TAG, "Add service successful: " + serviceInfo.getServiceName());
       notifyDataSetChanged();
     }
@@ -248,14 +301,14 @@ public class ConnectActivity extends AppCompatActivity {
   
     boolean hasIP(InetAddress ip) {
       for (Device device : devices)
-        if (device.getNsdServiceInfo().getHost().getHostAddress().equals(ip.getHostAddress()))
+        if (device.getIpAddress().equals(ip.getHostAddress()))
           return true;
       return false;
     }
   
     boolean hasName(String serviceName) {
       for (Device device : devices) {
-        if (device.getNsdServiceInfo().getServiceName().equals(serviceName)) return true;
+        if (device.getDeviceName().equals(serviceName)) return true;
       }
       return false;
     }

@@ -7,4 +7,5 @@
     <dimen name="add_devices_button_font">20sp</dimen>
     <dimen name="connect_switch_font">20sp</dimen>
     <dimen name="connect_switch_margin_bottom">30dp</dimen>
+    <bool name="isTablet">true</bool>
 </resources>

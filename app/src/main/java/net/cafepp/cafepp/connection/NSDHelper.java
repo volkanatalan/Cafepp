@@ -186,7 +186,7 @@ public class NSDHelper {
           
           else {
             // Service type is the string containing the protocol and transport layer for this service.
-            Log.d(TAG, "Same service type: " + serviceInfo.getServiceName());
+            Log.d(TAG, "Service type match: " + serviceInfo.getServiceName());
             nsdManager.resolveService(serviceInfo, initializeResolveListener());
           }
         }
@@ -238,8 +238,13 @@ public class NSDHelper {
           if (serviceInfo.getHost().getHostAddress().equals(ip) && resolveListener != null) {
             Log.d(TAG, "It's my device.");
             
-          } else if (resolveListener != null)
-            resolveListener.onResolved(serviceInfo);
+          } else if (resolveListener != null) {
+            try {
+              resolveListener.onResolved(serviceInfo);
+            } catch (IOException e) {
+              e.printStackTrace();
+            }
+          }
         } else {
           Log.d(TAG, "Host is null!");
         }
@@ -295,7 +300,7 @@ public class NSDHelper {
   }
   
   public interface ResolveListener {
-    void onResolved(NsdServiceInfo serviceInfo);
+    void onResolved(NsdServiceInfo serviceInfo) throws IOException;
     void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode);
   }
   

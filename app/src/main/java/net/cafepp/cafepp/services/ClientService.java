@@ -9,14 +9,23 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.nsd.NsdServiceInfo;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import net.cafepp.cafepp.R;
 import net.cafepp.cafepp.activities.ConnectActivity;
+import net.cafepp.cafepp.connection.CommunicationThread;
+import net.cafepp.cafepp.connection.CommunicationThread.Command;
 import net.cafepp.cafepp.connection.NSDHelper;
+import net.cafepp.cafepp.objects.Device;
+
+import java.io.IOException;
+import java.net.Socket;
 
 public class ClientService extends Service {
   
@@ -24,68 +33,104 @@ public class ClientService extends Service {
   private Context context;
   private NSDHelper nsdHelper;
   private boolean isRestartingDiscovery = false;
+  private Thread threadCommunication;
   
   
   public ClientService() {
     context = this;
   }
   
-  @Override
-  public int onStartCommand(Intent intent, int flags, int startId) {
-    if (intent.getAction()!=null) {
-      Log.d(TAG, intent.getAction());
-      if (intent.getAction().equals(Constants.ACTION.START_ACTION)) {
-  
-        Log.i(TAG, "Client Service Start Action entered.");
-        
-        Intent notificationIntent = new Intent(this, ConnectActivity.class);
-        notificationIntent.setAction(Constants.ACTION.MAIN_ACTION);
-        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                                        | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(
-            this, 0, notificationIntent, 0);
-        
-        Intent stopIntent = new Intent(this, ClientService.class);
-        stopIntent.setAction(Constants.ACTION.STOP_ACTION);
-        PendingIntent pstopIntent = PendingIntent.getActivity(
-            this, 0, stopIntent, 0);
-        
-        Bitmap icon = BitmapFactory.decodeResource(getResources(), R.mipmap.app_icon_round);
-        
-        Notification notification = new NotificationCompat.Builder(this,
-            Constants.NOTIFICATION_ID.CLIENT_SERVICE + "")
-                                        .setContentTitle(getString(R.string.cafépp_allcaps))
-                                        .setTicker(getString(R.string.cafépp_allcaps))
-                                        .setContentText(getString(R.string.client))
-                                        .setSmallIcon(R.drawable.wifi)
-                                        .setLargeIcon(Bitmap.createScaledBitmap(
-                                            icon, 128, 128, false))
-                                        .setContentIntent(pendingIntent)
-                                        .setOngoing(true)
-                                        .addAction(R.drawable.stop, getString(R.string.stop), pstopIntent)
-                                        .build();
-        startForeground(Constants.NOTIFICATION_ID.CLIENT_SERVICE, notification);
-  
-        nsdHelper = new NSDHelper(this);
-        setDiscoveryListener();
-        setResolveListener();
-        nsdHelper.startDiscovery();
-        
-      } else if (intent.getAction().equals(Constants.ACTION.STOP_ACTION)) {
-        Log.i(TAG, "Client Service Stop Action entered.");
-        
-        nsdHelper.stopDiscovery();
-        stopForeground(true);
-        stopSelf();
-      }
+  /**
+   * Handler of incoming messages from clients.
+   */
+  static class IncomingHandler extends Handler {
+    private Context applicationContext;
+    
+    IncomingHandler(Context context) {
+      applicationContext = context.getApplicationContext();
     }
-    return START_STICKY;
+    
+    @Override
+    public void handleMessage(Message msg) {
+      if (msg.obj != null) {
+        if (msg.obj instanceof Device) {
+          Device device = (Device) msg.obj;
+          Log.i(TAG, device.getDeviceName() + " " + device.getPairKey());
+          
+        } else if (msg.obj instanceof Command) {
+          Command command = (Command) msg.obj;
+          
+          switch (command) {
+            case INFO_REQ:
+              
+              break;
+            default:
+              Log.e(TAG, "Unknown command");
+          }
+        }
+      } else super.handleMessage(msg);
+    }
+  }
+  
+  /**
+   * Target we publish for clients to send messages to IncomingHandler.
+   */
+  Messenger mMessenger;
+  
+  
+  @Override
+  public IBinder onBind(Intent intent) {
+    mMessenger = new Messenger(new IncomingHandler(this));
+    return mMessenger.getBinder();
+  }
+  
+  @Override
+  public void onCreate() {
+    super.onCreate();
+  
+    Log.i(TAG, "In Client Service onCreate.");
+  
+    Intent notificationIntent = new Intent(this, ConnectActivity.class);
+    notificationIntent.setAction(Constants.ACTION.MAIN_ACTION);
+    notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                                    | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+    PendingIntent pendingIntent = PendingIntent.getActivity(
+        this, 0, notificationIntent, 0);
+  
+    Intent stopIntent = new Intent(this, ClientService.class);
+    stopIntent.setAction(Constants.ACTION.STOP_ACTION);
+    PendingIntent pstopIntent = PendingIntent.getActivity(
+        this, 0, stopIntent, 0);
+  
+    Bitmap icon = BitmapFactory.decodeResource(getResources(), R.mipmap.app_icon_round);
+  
+    Notification notification = new NotificationCompat.Builder(this,
+        Constants.NOTIFICATION_ID.CLIENT_SERVICE + "")
+                                    .setContentTitle(getString(R.string.cafépp_allcaps))
+                                    .setTicker(getString(R.string.cafépp_allcaps))
+                                    .setContentText(getString(R.string.client))
+                                    .setSmallIcon(R.drawable.wifi)
+                                    .setLargeIcon(Bitmap.createScaledBitmap(
+                                        icon, 128, 128, false))
+                                    .setContentIntent(pendingIntent)
+                                    .setOngoing(true)
+                                    .addAction(R.drawable.stop, getString(R.string.stop), pstopIntent)
+                                    .build();
+    startForeground(Constants.NOTIFICATION_ID.CLIENT_SERVICE, notification);
+  
+    nsdHelper = new NSDHelper(this);
+    setDiscoveryListener();
+    setResolveListener();
+    nsdHelper.startDiscovery();
   }
   
   @Override
   public void onDestroy() {
     Log.d(TAG, "In onDestroy");
-    nsdHelper.unregister();
+    nsdHelper.stopDiscovery();
+    if (!threadCommunication.isInterrupted()) threadCommunication.interrupt();
+    stopForeground(true);
+    stopSelf();
     super.onDestroy();
   }
   
@@ -147,18 +192,27 @@ public class ClientService extends Service {
     
     nsdHelper.setResolveListener(new NSDHelper.ResolveListener() {
       @Override
-      public void onResolved(final NsdServiceInfo serviceInfo) {
-        sendMessageToActivity("ADD", serviceInfo);
+      public void onResolved(final NsdServiceInfo serviceInfo) throws IOException {
+        Socket socket = null;
+        Log.d(TAG, "In onResolved");
+        
+        try {
+          socket = new Socket(serviceInfo.getHost(), serviceInfo.getPort());
+          CommunicationThread commThread = new CommunicationThread(context, socket, Command.INFO_REQ);
+          commThread.setNsdServiceInfo(serviceInfo);
+          threadCommunication = new Thread(commThread);
+          threadCommunication.start();
+  
+        } catch(Exception e){
+          if (socket != null && !socket.isClosed())
+          socket.close();
+          e.printStackTrace();
+        }
       }
       
       @Override
       public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode) {
       }
     });
-  }
-  
-  @Override
-  public IBinder onBind(Intent intent) {
-    return null;
   }
 }
