@@ -92,8 +92,8 @@
                 android:layout_marginBottom="5dp"
                 android:background="@color/colorPrimary"/>
 
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/recyclerView"
+            <ListView
+                android:id="@+id/availableDevicesListView"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"/>
