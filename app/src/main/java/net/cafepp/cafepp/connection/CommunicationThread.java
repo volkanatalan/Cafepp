@@ -1,7 +1,10 @@
 package net.cafepp.cafepp.connection;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.nsd.NsdServiceInfo;
+import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import net.cafepp.cafepp.objects.Device;
@@ -57,6 +60,11 @@ public class CommunicationThread implements Runnable {
                 Log.d(TAG, "Input is a Device.");
                 Device device = (Device) input;
                 Log.i(TAG, "Device Name: " + device.getDeviceName());
+                Log.i(TAG, "MAC Address: " + device.getMacAddress());
+                Log.i(TAG, "isTablet: " + device.isTablet());
+  
+                sendDeviceToClientService("ADD", device);
+                
                 Thread.currentThread().interrupt();
                 
               } else Thread.currentThread().interrupt();
@@ -116,6 +124,7 @@ public class CommunicationThread implements Runnable {
       Thread.currentThread().interrupt();
     }
   }
+  
   private void yesSir(Command command) {
     Log.d(TAG, "Command is " + command);
     
@@ -125,6 +134,16 @@ public class CommunicationThread implements Runnable {
         this.command = Command.INFO;
         break;
     }
+  }
+  
+  private void sendDeviceToClientService(String command, Device device) {
+    Log.i(TAG, "Message sending to ClientService");
+    Intent intent = new Intent("ClientService");
+    intent.putExtra("Command", command);
+    Bundle bundle = new Bundle();
+    bundle.putSerializable("Message", device);
+    intent.putExtra("Message", bundle);
+    LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
   }
   
   public Device getMyDevice() {
