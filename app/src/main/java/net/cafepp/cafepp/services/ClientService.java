@@ -3,8 +3,10 @@ package net.cafepp.cafepp.services;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.nsd.NsdServiceInfo;
@@ -26,6 +28,8 @@ import net.cafepp.cafepp.objects.Device;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ClientService extends Service {
   
@@ -34,6 +38,7 @@ public class ClientService extends Service {
   private NSDHelper nsdHelper;
   private boolean isRestartingDiscovery = false;
   private Thread threadCommunication;
+  private List<Device> foundDevices = new ArrayList<>();
   
   
   public ClientService() {
@@ -75,7 +80,7 @@ public class ClientService extends Service {
   /**
    * Target we publish for clients to send messages to IncomingHandler.
    */
-  Messenger mMessenger;
+  private Messenger mMessenger;
   
   
   @Override
@@ -118,6 +123,11 @@ public class ClientService extends Service {
                                     .build();
     startForeground(Constants.NOTIFICATION_ID.CLIENT_SERVICE, notification);
   
+  
+    // Listen for the commands from Client Service.
+    LocalBroadcastManager.getInstance(context).registerReceiver(
+        mMessageReceiver, new IntentFilter("ClientService"));
+  
     nsdHelper = new NSDHelper(this);
     setDiscoveryListener();
     setResolveListener();
@@ -128,18 +138,46 @@ public class ClientService extends Service {
   public void onDestroy() {
     Log.d(TAG, "In onDestroy");
     nsdHelper.stopDiscovery();
-    if (!threadCommunication.isInterrupted()) threadCommunication.interrupt();
+    if (threadCommunication != null && !threadCommunication.isInterrupted())
+      threadCommunication.interrupt();
+    LocalBroadcastManager.getInstance(context).unregisterReceiver(mMessageReceiver);
     stopForeground(true);
     stopSelf();
     super.onDestroy();
   }
   
-  private void sendMessageToActivity(String command, NsdServiceInfo info) {
+  private void addFoundDevice(Device device) {
+    Log.i(TAG, "Device \"" + device.getDeviceName() + "\" is being added to the list.");
+    for (Device d : foundDevices)
+      if (d.getMacAddress().equals(device.getMacAddress())) {
+        Log.e(TAG, "Attempt to add a device with the same MAC address.");
+        return;
+      }
+  
+    foundDevices.add(device);
+    Log.i(TAG, "Add successful!");
+  
+    sendMessageToActivity("ADD", device);
+  }
+  
+  private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      // Get extra data included in the Intent
+      String command = intent.getStringExtra("Command");
+      Device device = (Device) intent.getBundleExtra("Message").getSerializable("Message");
+      Log.d(TAG, "BroadcastReceiver command: " + command);
+      
+      if (command.equals("ADD")) addFoundDevice(device);
+    }
+  };
+  
+  private void sendMessageToActivity(String command, Device device) {
     Log.i(TAG, "Message sending to activity");
-    Intent intent = new Intent("ClientService");
+    Intent intent = new Intent("ConnectActivity");
     intent.putExtra("Command", command);
     Bundle bundle = new Bundle();
-    bundle.putParcelable("Message", info);
+    bundle.putSerializable("Message", device);
     intent.putExtra("Message", bundle);
     LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
   }
@@ -159,7 +197,6 @@ public class ClientService extends Service {
       @Override
       public void onServiceLost(NsdServiceInfo service) {
         Log.d(TAG, "Lost service: " + service.getServiceName());
-        sendMessageToActivity("CLEAR", null);
         if (!isRestartingDiscovery) restartDiscovery();
       }
       
@@ -184,6 +221,8 @@ public class ClientService extends Service {
   private void restartDiscovery() {
     Log.d(TAG, "Restarting discovery!");
     isRestartingDiscovery = true;
+    sendMessageToActivity("CLEAR", null);
+    foundDevices.clear();
     nsdHelper.stopDiscovery();
   }
   
@@ -198,9 +237,9 @@ public class ClientService extends Service {
         
         try {
           socket = new Socket(serviceInfo.getHost(), serviceInfo.getPort());
-          CommunicationThread commThread = new CommunicationThread(context, socket, Command.INFO_REQ);
-          commThread.setNsdServiceInfo(serviceInfo);
-          threadCommunication = new Thread(commThread);
+          CommunicationThread communicationThread = new CommunicationThread(context, socket, Command.INFO_REQ);
+          communicationThread.setNsdServiceInfo(serviceInfo);
+          threadCommunication = new Thread(communicationThread);
           threadCommunication.start();
   
         } catch(Exception e){
