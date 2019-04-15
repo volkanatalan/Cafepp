@@ -49,7 +49,7 @@ public class ConnectActivity extends AppCompatActivity {
   private FoundDevicesAdapter foundDevicesAdapter;
   private View.OnClickListener mOnClickListener;
   public FrameLayout interlayer;
-  Messenger messenger = null;
+  private Messenger messenger = null;
   private boolean bound = false;
   
   @Override
@@ -76,7 +76,7 @@ public class ConnectActivity extends AppCompatActivity {
   
         // Listen for the commands from Client Service.
         LocalBroadcastManager.getInstance(this).registerReceiver(
-            mMessageReceiver, new IntentFilter("ClientService"));
+            mMessageReceiver, new IntentFilter("ConnectActivity"));
         
       } else {
   
@@ -161,9 +161,9 @@ public class ConnectActivity extends AppCompatActivity {
     public void onReceive(Context context, Intent intent) {
       // Get extra data included in the Intent
       String command = intent.getStringExtra("Command");
-      NsdServiceInfo info = intent.getBundleExtra("Message").getParcelable("Message");
+      Device device = intent.getBundleExtra("Message").getParcelable("Message");
       Log.d(TAG, "BroadcastReceiver command: " + command);
-      if (command.equals("ADD")) foundDevicesAdapter.add(info);
+      if (command.equals("ADD")) foundDevicesAdapter.add(device);
       else if (command.equals("CLEAR")) foundDevicesAdapter.clear();
     }
   };
@@ -257,31 +257,30 @@ public class ConnectActivity extends AppCompatActivity {
       return devices.size();
     }
   
-    void add(NsdServiceInfo serviceInfo) {
-      String serviceName = "";
+    void add(Device device) {
       
-      if (hasIP(serviceInfo.getHost())){
+      if (hasIP(device.getIpAddress())){
         // If a service with the same ip has found, don't add it to the list.
-        Log.d(TAG, "Same service: " + serviceInfo.getServiceName());
+        Log.d(TAG, "Same service: " + device.getDeviceName());
         return;
   
-      } else if (hasName(serviceInfo.getServiceName())){
+      } else if (hasName(device.getDeviceName())){
         // If a service with the same name but different ip has found, change its name.
-        Log.d(TAG, "Service with the same name but different ip: " + serviceInfo.getServiceName());
-        serviceName = serviceInfo.getServiceName();
+        Log.d(TAG, "Service with the same name but different ip: " + device.getDeviceName());
+        
+        String deviceName = device.getDeviceName();
         int i = 1;
   
-        while (hasName(serviceName)) {
+        while (hasName(deviceName)) {
           i++;
-          serviceName += " (" + i + ")";
+          deviceName += " (" + i + ")";
         }
+  
+        device.setDeviceName(deviceName);
       }
-      String serviceType = serviceInfo.getServiceType();
-      String ipAddress = serviceInfo.getHost().getHostAddress();
-      int port = serviceInfo.getPort();
       
-      devices.add(new Device(serviceName, serviceType, ipAddress, port));
-      Log.d(TAG, "Add service successful: " + serviceInfo.getServiceName());
+      devices.add(device);
+      Log.d(TAG, "Add service successful: " + device.getDeviceName());
       notifyDataSetChanged();
     }
   
@@ -299,16 +298,17 @@ public class ConnectActivity extends AppCompatActivity {
       notifyDataSetChanged();
     }
   
-    boolean hasIP(InetAddress ip) {
+    boolean hasIP(String ip) {
       for (Device device : devices)
-        if (device.getIpAddress().equals(ip.getHostAddress()))
+        if (device.getIpAddress().equals(ip))
           return true;
+        
       return false;
     }
   
-    boolean hasName(String serviceName) {
+    boolean hasName(String deviceName) {
       for (Device device : devices) {
-        if (device.getDeviceName().equals(serviceName)) return true;
+        if (device.getDeviceName().equals(deviceName)) return true;
       }
       return false;
     }
