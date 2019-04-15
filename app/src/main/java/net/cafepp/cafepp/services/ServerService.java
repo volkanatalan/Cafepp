@@ -151,10 +151,9 @@ public class ServerService extends Service {
       public void onServiceUnregistered(NsdServiceInfo serviceInfo) {
         Log.d(TAG, "Service unregistered: " + serviceInfo.getServiceName());
         if (!serverSocket.isClosed()){
-            //serverSocket.close();
-            threadServer.interrupt();
-            threadServer = null;
-          }
+          threadServer.interrupt();
+          threadServer = null;
+        }
       }
       
       @Override
