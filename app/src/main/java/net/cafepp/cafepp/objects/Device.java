@@ -1,9 +1,6 @@
 package net.cafepp.cafepp.objects;
 
-import android.net.nsd.NsdServiceInfo;
-
 import java.io.Serializable;
-import java.net.InetAddress;
 
 public class Device implements Serializable {
   private String deviceName;
