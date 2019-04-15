@@ -13,10 +13,10 @@ import net.cafepp.cafepp.objects.Device;
 import java.util.List;
 
 public class DevicesListViewAdapter extends BaseAdapter {
-  List<Device> devices;
-  boolean showIP = false;
+  private List<Device> devices;
+  private boolean showIP = false;
   
-  static class ViewHolder{
+  private static class ViewHolder{
     private TextView deviceName, ip;
     private ImageView connectImage;
   }
