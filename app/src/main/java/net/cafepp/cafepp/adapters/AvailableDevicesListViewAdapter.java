@@ -11,12 +11,13 @@ import android.widget.TextView;
 import net.cafepp.cafepp.R;
 import net.cafepp.cafepp.objects.Device;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AvailableDevicesListViewAdapter extends BaseAdapter {
   
   private final String TAG = "AvailableDevicesLVAdptr";
-  private List<Device> devices;
+  private List<Device> devices = new ArrayList<>();
   
   private static class ViewHolder{
     TextView deviceName;
@@ -60,15 +61,18 @@ public class AvailableDevicesListViewAdapter extends BaseAdapter {
       // If View Holder is available, reuse it.
       viewHolder = (ViewHolder) convertView.getTag();
     }
+  
+    Device device = devices.get(position);
     
-      viewHolder.deviceName.setText(devices.get(position).getDeviceName());
-      viewHolder.ip.setText(devices.get(position).getIpAddress());
+    viewHolder.deviceName.setText(device.getDeviceName());
+    viewHolder.ip.setText(device.getIpAddress());
+    Log.d(TAG, "ip: " + device.getIpAddress());
       
-      // Show the type of device (phone or tablet).
-      if (devices.get(position).isTablet())
-        viewHolder.deviceType.setImageResource(R.drawable.tablet_with_logo);
-      else
-        viewHolder.deviceType.setImageResource(R.drawable.phone_with_logo);
+    // Show the type of device (phone or tablet).
+    if (device.isTablet())
+      viewHolder.deviceType.setImageResource(R.drawable.tablet_with_logo);
+    else
+      viewHolder.deviceType.setImageResource(R.drawable.phone_with_logo);
       
     return convertView;
   }
