@@ -11,55 +11,52 @@
     android:clickable="true"
     android:focusable="true"
     android:layout_gravity="center"
-    tools:context=".fragments.ConnectFragment">
+    tools:context=".fragments.PairFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="@dimen/default_padding">
+        android:padding="@dimen/default_padding"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/deviceNameLabelTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/device_name_semicolon"
+            android:textColor="@color/colorPrimary"/>
 
         <TextView
             android:id="@+id/deviceNameTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/connect_switch_margin_bottom"
+            android:text="DeviceName"
+            android:textColor="@color/black"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/pairKeyLabelTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/pair_key_semicolon"
+            android:textColor="@color/colorPrimary"/>
+
+        <TextView
+            android:id="@+id/pairKeyTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:text="@string/device_name"
-            android:textSize="16sp" />
+            android:layout_marginBottom="@dimen/connect_switch_margin_bottom"
+            android:text="12345"
+            android:textAlignment="center"
+            android:textColor="@color/black"
+            android:textSize="@dimen/pair_key_font_size"
+            android:textStyle="bold" />
 
-        <android.support.design.widget.TextInputLayout
-            android:id="@+id/passwordTextInput"
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            app:passwordToggleEnabled="true">
-
-            <android.support.design.widget.TextInputEditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/password"
-                android:inputType="textPassword" />
-
-        </android.support.design.widget.TextInputLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:orientation="horizontal"
-            android:visibility="gone">
-
-            <CheckBox
-                android:id="@+id/showPasswordCheckBox"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-            <TextView
-                android:id="@+id/showPasswordTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/show_password" />
-        </LinearLayout>
+            android:text="@string/does_it_match"/>
     </LinearLayout>
 
     <LinearLayout
@@ -82,8 +79,7 @@
             android:padding="@dimen/default_padding"
             android:text="@string/cancel"
             android:textAlignment="center"
-            android:textSize="16sp"
-            android:textStyle="bold"/>
+            android:textSize="16sp"/>
 
         <LinearLayout
             android:id="@+id/seperatorV"
@@ -98,7 +94,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:padding="@dimen/default_padding"
-            android:text="@string/confirm"
+            android:text="@string/pair"
             android:textAlignment="center"
             android:textSize="16sp"
             android:textStyle="bold" />
