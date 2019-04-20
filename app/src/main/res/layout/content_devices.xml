@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -27,14 +27,16 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/registered_devices" />
+            android:text="@string/paired_devices_semicolon"
+            android:textColor="@color/colorPrimary"
+            android:textSize="@dimen/label_font_size"/>
 
         <RelativeLayout
-            android:id="@+id/seperator"
+            android:id="@+id/separator"
             android:layout_width="match_parent"
             android:layout_height="2dp"
-            android:layout_marginBottom="10dp"
-            android:background="@color/black_overlay"/>
+            android:layout_marginBottom="5dp"
+            android:background="@color/colorPrimary"/>
 
         <ListView
             android:id="@+id/registeredDevicesListView"
@@ -43,7 +45,11 @@
     </LinearLayout>
 
     <FrameLayout
-        android:id="@+id/fragmentContainer"
+        android:id="@+id/fragmentContainerDevicesActivity"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-</LinearLayout>
+        android:layout_height="match_parent"
+        android:background="@mipmap/black_dark_transparent_50"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone"/>
+</FrameLayout>
