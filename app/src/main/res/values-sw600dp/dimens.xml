@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <bool name="isTablet">true</bool>
     <dimen name="add_device_dim">40dp</dimen>
     <dimen name="cafepp_font">140sp</dimen>
     <dimen name="main_activity_button_padding">30dp</dimen>
     <dimen name="main_activity_button_font">20sp</dimen>
     <dimen name="add_devices_button_font">20sp</dimen>
     <dimen name="connect_switch_font">20sp</dimen>
-    <dimen name="connect_switch_margin_bottom">30dp</dimen>
-    <bool name="isTablet">true</bool>
+    <dimen name="label_font_size">20sp</dimen>
+    <dimen name="pair_key_font_size">25sp</dimen>
 </resources>

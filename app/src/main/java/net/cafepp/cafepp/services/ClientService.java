@@ -10,21 +10,19 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.nsd.NsdServiceInfo;
-import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
-import android.os.Messenger;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import net.cafepp.cafepp.R;
 import net.cafepp.cafepp.activities.ConnectActivity;
+import net.cafepp.cafepp.connection.Command;
 import net.cafepp.cafepp.connection.CommunicationThread;
-import net.cafepp.cafepp.connection.CommunicationThread.Command;
 import net.cafepp.cafepp.connection.NSDHelper;
+import net.cafepp.cafepp.connection.Package;
 import net.cafepp.cafepp.objects.Device;
+import net.cafepp.cafepp.objects.PairedDevice;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -37,56 +35,14 @@ public class ClientService extends Service {
   private Context context;
   private NSDHelper nsdHelper;
   private boolean isRestartingDiscovery = false;
-  private Thread threadCommunication;
+  private static Thread threadCommunication;
   private List<Device> foundDevices = new ArrayList<>();
+  private static List<PairedDevice> pairWaitingDevices = new ArrayList<>();
+  private List<Device> pairedDevices = new ArrayList<>();
   
   
   public ClientService() {
     context = this;
-  }
-  
-  /**
-   * Handler of incoming messages from clients.
-   */
-  static class IncomingHandler extends Handler {
-    private Context applicationContext;
-    
-    IncomingHandler(Context context) {
-      applicationContext = context.getApplicationContext();
-    }
-    
-    @Override
-    public void handleMessage(Message msg) {
-      if (msg.obj != null) {
-        if (msg.obj instanceof Device) {
-          Device device = (Device) msg.obj;
-          Log.i(TAG, device.getDeviceName() + " " + device.getPairKey());
-          
-        } else if (msg.obj instanceof Command) {
-          Command command = (Command) msg.obj;
-          
-          switch (command) {
-            case INFO_REQ:
-              
-              break;
-            default:
-              Log.e(TAG, "Unknown command");
-          }
-        }
-      } else super.handleMessage(msg);
-    }
-  }
-  
-  /**
-   * Target we publish for clients to send messages to IncomingHandler.
-   */
-  private Messenger mMessenger;
-  
-  
-  @Override
-  public IBinder onBind(Intent intent) {
-    mMessenger = new Messenger(new IncomingHandler(this));
-    return mMessenger.getBinder();
   }
   
   @Override
@@ -141,13 +97,31 @@ public class ClientService extends Service {
     if (threadCommunication != null && !threadCommunication.isInterrupted())
       threadCommunication.interrupt();
     LocalBroadcastManager.getInstance(context).unregisterReceiver(mMessageReceiver);
-    stopForeground(true);
-    stopSelf();
     super.onDestroy();
   }
   
+  private void sendPackageToServer(Package aPackage, CommunicationThread.OnOutputListener listener) {
+    Command command = aPackage.getCommand();
+    Device myDevice = aPackage.getSendingDevice();
+    Device targetDevice = aPackage.getTargetDevice();
+    
+    CommunicationThread communicationThread = new CommunicationThread(command);
+    communicationThread.setMyDevice(myDevice);
+    communicationThread.setTargetDevice(targetDevice);
+    communicationThread.setOnOutputListener(listener);
+    communicationThread.setOnInputListener(aPackage1 -> resolvePackage(aPackage));
+    threadCommunication = new Thread(communicationThread);
+    threadCommunication.start();
+  }
+  
+  private PairedDevice.OnPairedListener onPairedListener = (isBothConfirmed, device) -> {
+    if (isBothConfirmed) {
+      Package aPackage = new Package(Command.PAIRED, null, device);
+      sendMessageToActivity(aPackage);
+    }
+  };
+  
   private void addFoundDevice(Device device) {
-    Log.i(TAG, "Device \"" + device.getDeviceName() + "\" is being added to the list.");
     for (Device d : foundDevices)
       if (d.getMacAddress().equals(device.getMacAddress())) {
         Log.e(TAG, "Attempt to add a device with the same MAC address.");
@@ -157,28 +131,81 @@ public class ClientService extends Service {
     foundDevices.add(device);
     Log.i(TAG, "Add successful!");
   
-    sendMessageToActivity("ADD", device);
+    Package aPackage = new Package(Command.FOUND, null, device);
+  
+    sendMessageToActivity(aPackage);
   }
   
   private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
     @Override
     public void onReceive(Context context, Intent intent) {
-      // Get extra data included in the Intent
-      String command = intent.getStringExtra("Command");
-      Device device = (Device) intent.getBundleExtra("Message").getSerializable("Message");
-      Log.d(TAG, "BroadcastReceiver command: " + command);
+      Object obj = intent.getSerializableExtra("Message");
+  
+      if (obj != null) {
+        if (obj instanceof Device) {
+          Device device = (Device) obj;
+          Log.i(TAG, device.getDeviceName() + " " + device.getPairKey());
       
-      if (command.equals("ADD")) addFoundDevice(device);
+        } else if (obj instanceof Command) {
+          Command command = (Command) obj;
+      
+          switch (command) {
+            case INFO_REQ:
+              break;
+              
+            case REFRESH:
+              if (!isRestartingDiscovery) restartDiscovery();
+              break;
+              
+            default:
+              Log.e(TAG, "Unknown command");
+          }
+      
+        } else if (obj instanceof Package) {
+          Package aPackage = (Package) obj;
+          resolvePackage(aPackage);
+      
+        }
+      }
     }
   };
   
-  private void sendMessageToActivity(String command, Device device) {
+  private void resolvePackage(Package pkg) {
+    Command command = pkg.getCommand();
+    switch (command) {
+      case PAIR_REQ:
+        sendPackageToServer(pkg, aPackage -> {
+          pkg.setCommand(Command.LISTEN);
+          sendPackageToServer(pkg, null);
+        });
+        
+        PairedDevice pairedDevice = new PairedDevice(pkg.getTargetDevice());
+        pairedDevice.setOnPairedListener(onPairedListener);
+        pairWaitingDevices.add(pairedDevice);
+        break;
+      
+      case PAIR_SERVER_ACCEPT:
+        Log.d(TAG, "Server accepted to pair.");
+        break;
+      
+      case PAIR_SERVER_DENY:
+        Log.d(TAG, "Server denied to pair.");
+        break;
+      
+      case PAIR_CLIENT_ACCEPT:
+        Log.d(TAG, "Client accepted to pair.");
+        break;
+      
+      case PAIR_CLIENT_DENY:
+        Log.d(TAG, "Client denied to pair.");
+        break;
+    }
+  }
+  
+  private void sendMessageToActivity(Package aPackage) {
     Log.i(TAG, "Message sending to activity");
     Intent intent = new Intent("ConnectActivity");
-    intent.putExtra("Command", command);
-    Bundle bundle = new Bundle();
-    bundle.putSerializable("Message", device);
-    intent.putExtra("Message", bundle);
+    intent.putExtra("Message", aPackage);
     LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
   }
   
@@ -221,8 +248,8 @@ public class ClientService extends Service {
   private void restartDiscovery() {
     Log.d(TAG, "Restarting discovery!");
     isRestartingDiscovery = true;
-    sendMessageToActivity("CLEAR", null);
     foundDevices.clear();
+    sendMessageToActivity(new Package(Command.CLEAR, null, null));
     nsdHelper.stopDiscovery();
   }
   
@@ -237,8 +264,11 @@ public class ClientService extends Service {
         
         try {
           socket = new Socket(serviceInfo.getHost(), serviceInfo.getPort());
-          CommunicationThread communicationThread = new CommunicationThread(context, socket, Command.INFO_REQ);
-          communicationThread.setNsdServiceInfo(serviceInfo);
+          
+          CommunicationThread communicationThread = new CommunicationThread(socket, Command.INFO_REQ);
+          communicationThread.setOnInputListener(
+              aPackage -> addFoundDevice(aPackage.getSendingDevice()));
+          
           threadCommunication = new Thread(communicationThread);
           threadCommunication.start();
   
@@ -253,5 +283,10 @@ public class ClientService extends Service {
       public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode) {
       }
     });
+  }
+  
+  @Override
+  public IBinder onBind(Intent intent) {
+    return null;
   }
 }

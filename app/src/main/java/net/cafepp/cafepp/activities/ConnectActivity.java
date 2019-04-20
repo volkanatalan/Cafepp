@@ -2,22 +2,22 @@ package net.cafepp.cafepp.activities;
 
 import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.os.IBinder;
-import android.os.Message;
-import android.os.Messenger;
-import android.os.RemoteException;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.format.Formatter;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.Switch;
@@ -25,20 +25,24 @@ import android.widget.TextView;
 
 import net.cafepp.cafepp.R;
 import net.cafepp.cafepp.adapters.AvailableDevicesListViewAdapter;
-import net.cafepp.cafepp.fragments.ConnectFragment;
+import net.cafepp.cafepp.connection.Package;
+import  net.cafepp.cafepp.connection.Command;
+import net.cafepp.cafepp.fragments.PairFragment;
 import net.cafepp.cafepp.fragments.ConnectSettingsDeviceNameFragment;
 import net.cafepp.cafepp.objects.Device;
 import net.cafepp.cafepp.services.ClientService;
+
+import java.util.Random;
+
 
 public class ConnectActivity extends AppCompatActivity {
   
   private final String TAG = "ConnectActivity";
   public TextView deviceNameTextView;
+  private Device myDevice;
   private ListView availableDevicesListView;
   private AvailableDevicesListViewAdapter foundDevicesAdapter;
   public FrameLayout interlayer;
-  private Messenger messenger = null;
-  private boolean bound = false;
   
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -49,135 +53,155 @@ public class ConnectActivity extends AppCompatActivity {
     interlayer = findViewById(R.id.interlayer);
     Switch switchFindDevices = findViewById(R.id.switchFindDevices);
     
-    configureRecyclerView();
-  
+    configureListView();
+    getMyDevice();
   
     boolean isServiceRunning = isServiceRunningInForeground(this, ClientService.class);
     switchFindDevices.setChecked(isServiceRunning);
     Log.d(TAG, "Is Client Service running: " + isServiceRunning);
   
-    switchFindDevices.setOnCheckedChangeListener((buttonView, isChecked) -> {
-      if (isChecked) {
-        Log.d(TAG, "Switch checked true");
-        Intent clientServiceIntent = new Intent(this, ClientService.class);
-        bindService(clientServiceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+    switchFindDevices.setOnCheckedChangeListener(onCheckedChangeListener);
   
-        // Listen for the commands from Client Service.
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-            mMessageReceiver, new IntentFilter("ConnectActivity"));
-        
-      } else {
-  
-        // Unbind from the service
-        if (bound) {
-          
-          // Stop listening for the commands from Client Service.
-          LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
-          foundDevicesAdapter.clear();
-          
-          unbindService(serviceConnection);
-          bound = false;
-        }
-      }
-    });
+    // Listen for the commands from Client Service.
+    LocalBroadcastManager.getInstance(ConnectActivity.this).registerReceiver(
+        mMessageReceiver, new IntentFilter("ConnectActivity"));
   }
   
   @Override
   protected void onResume() {
     super.onResume();
   
-    // Get device name.
-    SharedPreferences sharedPreferences = getSharedPreferences("ConnectSettings", Context.MODE_PRIVATE);
-    String deviceName = sharedPreferences.getString("deviceName", getString(R.string.cafepp_device));
+    String deviceName = getDeviceName();
     
     deviceNameTextView.setText(deviceName);
   }
   
   @Override
   protected void onDestroy() {
-    super.onDestroy();
-    
     // Stop listening for the commands from Client Service.
-    LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+    LocalBroadcastManager.getInstance(ConnectActivity.this).unregisterReceiver(mMessageReceiver);
     foundDevicesAdapter.clear();
+    
+    super.onDestroy();
   }
   
-  private void sendMessageToClientService(Object message) {
-    if (!bound) {
-      Log.e(TAG, "Service not bound!");
-      return;
-    }
-    
-    // Create and send a message to the service, using a supported 'what' value
-    Message msg = new Message();
-    msg.obj = message;
-    try {
-      messenger.send(msg);
-      Log.i(TAG, "Message sent to Client Service!");
-    } catch (RemoteException e) {
-      e.printStackTrace();
-    }
-    
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    // Inflate the menu; this adds items to the action bar if it is present.
+    getMenuInflater().inflate(R.menu.refresh, menu);
+    return true;
   }
   
-  /** Defines callbacks for service binding, passed to bindService() */
-  private ServiceConnection serviceConnection = new ServiceConnection() {
-    
-    @Override
-    public void onServiceConnected(ComponentName className,
-                                   IBinder service) {
-      // This is called when the connection with the service has been
-      // established, giving us the object we can use to
-      // interact with the service.  We are communicating with the
-      // service using a Messenger, so here we get a client-side
-      // representation of that from the raw IBinder object.
-      messenger = new Messenger(service);
-      bound = true;
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    // Handle action bar item clicks here. The action bar will
+    // automatically handle clicks on the Home/Up button, so long
+    // as you specify a parent activity in AndroidManifest.xml.
+    int id = item.getItemId();
+    if (id == R.id.action_refresh) {
+      sendCommandToClientService(Command.REFRESH);
+      return true;
     }
     
-    @Override
-    public void onServiceDisconnected(ComponentName arg0) {
-      // This is called when the connection with the service has been
-      // unexpectedly disconnected -- that is, its process crashed.
-      messenger = null;
-      bound = false;
-    }
+    return super.onOptionsItemSelected(item);
+  }
+  
+  private CompoundButton.OnCheckedChangeListener onCheckedChangeListener =
+    (buttonView, isChecked) -> {
+      Intent clientServiceIntent = new Intent(ConnectActivity.this, ClientService.class);
+      if (isChecked) {
+        Log.d(TAG, "Switch checked true.");
     
+        // Start ClientService.
+        startService(clientServiceIntent);
+    
+      } else {
+        Log.d(TAG, "Switch checked false.");
+        
+        foundDevicesAdapter.clear();
+    
+        // Stop ClientService.
+        stopService(clientServiceIntent);
+      }
+    };
+  
+  private void configureListView() {
+    foundDevicesAdapter = new AvailableDevicesListViewAdapter();
+    availableDevicesListView.setOnItemClickListener((parent, view, pos, id) -> {
+      
+      Device targetDevice = foundDevicesAdapter.getItem(pos);
+      myDevice.setPairKey(generatePairKey());
+      Package aPackage = new Package(Command.PAIR_REQ, myDevice, targetDevice);
+  
+      sendPackageToClientService(aPackage);
+      
+      FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+      ft.setCustomAnimations(R.anim.enter_from_bottom, R.anim.exit_to_top,
+          R.anim.enter_from_bottom, R.anim.exit_to_top);
+      ft.replace(R.id.fragmentContainer, PairFragment.newInstance(
+          aPackage, mOnButtonClickListener), "PairFragment");
+      ft.addToBackStack("PairFragment");
+      ft.commit();
+      
+      interlayer.setVisibility(View.VISIBLE);
+    });
+    
+    availableDevicesListView.setAdapter(foundDevicesAdapter);
+  }
+  
+  private PairFragment.OnButtonClickListener mOnButtonClickListener =
+      new PairFragment.OnButtonClickListener() {
+    @Override
+    public void onClickPair(Package aPackage) {
+      aPackage.setCommand(Command.PAIR_CLIENT_ACCEPT);
+      sendPackageToClientService(aPackage);
+    }
+  
+    @Override
+    public void onClickCancel(Package aPackage) {
+      aPackage.setCommand(Command.PAIR_CLIENT_DENY);
+      sendPackageToClientService(aPackage);
+    }
   };
+  
+  public void sendCommandToClientService(Command command) {
+    Intent intent = new Intent("ClientService");
+    intent.putExtra("Message", command);
+    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+  }
+  
+  public void sendPackageToClientService(Package aPackage) {
+    Intent intent = new Intent("ClientService");
+    intent.putExtra("Message", aPackage);
+    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+  }
   
   private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
     @Override
     public void onReceive(Context context, Intent intent) {
-      // Get extra data included in the Intent
-      String command = intent.getStringExtra("Command");
-      Device device = (Device) intent.getBundleExtra("Message").getSerializable("Message");
-      Log.d(TAG, "BroadcastReceiver command: " + command);
-      
-      if (command.equals("ADD")) foundDevicesAdapter.add(device);
-      else if (command.equals("CLEAR")) foundDevicesAdapter.clear();
+      Log.d(TAG, "Received message.");
+      Package aPackage = (Package) intent.getSerializableExtra("Message");
+  
+      if (aPackage != null) {
+        Command command = aPackage.getCommand();
+  
+        switch (command) {
+          case FOUND:
+            foundDevicesAdapter.add(aPackage.getTargetDevice());
+            break;
+            
+          case CLEAR:
+            foundDevicesAdapter.clear();
+            break;
+        }
+      }
     }
   };
   
-  private void configureRecyclerView() {
-    foundDevicesAdapter = new AvailableDevicesListViewAdapter();
-    availableDevicesListView.setOnItemClickListener((parent, view, pos, id) -> {
-      Log.d(TAG, "position: " + pos);
-
-      Device device = foundDevicesAdapter.getItem(pos);
-      String deviceName = device.getDeviceName();
-
-      FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-      ft.setCustomAnimations(R.anim.enter_from_bottom, R.anim.exit_to_top,
-          R.anim.enter_from_bottom, R.anim.exit_to_top);
-      ft.replace(R.id.fragmentContainer, ConnectFragment.newInstance(deviceName), "ConnectFragment");
-      ft.addToBackStack("ConnectFragment");
-      ft.commit();
-
-      interlayer.setVisibility(View.VISIBLE);
-  
-    });
-    
-    availableDevicesListView.setAdapter(foundDevicesAdapter);
+  private int generatePairKey() {
+    final int min = 10000;
+    final int max = 99999;
+    return new Random().nextInt((max - min) + 1) + min;
   }
   
   public static boolean isServiceRunningInForeground(Context context, Class<?> serviceClass) {
@@ -198,5 +222,25 @@ public class ConnectActivity extends AppCompatActivity {
     ft.replace(R.id.fragmentContainer, new ConnectSettingsDeviceNameFragment());
     ft.addToBackStack("ConnectActivity");
     ft.commit();
+  }
+  
+  private void getMyDevice() {
+    myDevice = new Device(getDeviceName(), getMacAddress(), getIpAddress());
+  }
+  
+  private String getDeviceName() {
+    SharedPreferences sharedPreferences = getSharedPreferences("ConnectSettings", Context.MODE_PRIVATE);
+    return sharedPreferences.getString("deviceName",getString(R.string.cafepp_device));
+  }
+  
+  private String getIpAddress() {
+    WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+    return Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
+  }
+  
+  private String getMacAddress() {
+    WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+    WifiInfo wInfo = wifiManager.getConnectionInfo();
+    return wInfo.getMacAddress();
   }
 }

@@ -63,7 +63,6 @@
     <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="devices">Devices</string>
-    <string name="registered_devices">Registered devices:</string>
     <string name="add_new_devices">Add new devices.</string>
     <string name="client">Client</string>
     <string name="server">Server</string>
@@ -71,5 +70,11 @@
     <string name="my_device">My Device</string>
     <string name="available_devices">Available Devices</string>
     <string name="paired_devices">Paired Devices</string>
+    <string name="device_name_semicolon">Device Name:</string>
+    <string name="pair_key_semicolon">Pair Key:</string>
+    <string name="pair">Pair</string>
+    <string name="does_it_match">Pair if the pair key matches with the device you are trying to connect.</string>
+    <string name="paired_devices_semicolon">Paired Devices:</string>
+    <string name="refresh">Refresh</string>
 
 </resources>
