@@ -9,6 +9,8 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.ArrayList;
+import java.util.List;
 
 import static android.content.Context.WIFI_SERVICE;
 
@@ -28,6 +30,7 @@ public class NSDHelper {
   private RegistrationListener registrationListener;
   private DiscoveryListener discoveryListener;
   private ResolveListener resolveListener;
+  private List<String> resolveFailDevices = new ArrayList<>();
   
   @SuppressWarnings("deprecation")
   public NSDHelper(Context context) {
@@ -273,8 +276,12 @@ public class NSDHelper {
         
         // If resolving is already active try again.
         if (errorCode == 3) {
-          Log.i(TAG, "Trying to resolve \"" + serviceName + "\" again.");
-          nsdManager.resolveService(serviceInfo, this);
+          String deviceName = serviceInfo.getServiceName();
+          if (!resolveFailDevices.contains(deviceName)) {
+            Log.i(TAG, "Trying to resolve \"" + serviceName + "\" again.");
+            resolveFailDevices.add(deviceName);
+            nsdManager.resolveService(serviceInfo, this);
+          }
         }
         
         // Call ResolveListener interface.
