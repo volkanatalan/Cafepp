@@ -1,10 +1,14 @@
 package net.cafepp.cafepp.objects;
 
+import android.net.nsd.NsdServiceInfo;
+
 import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 public class Device implements Serializable {
   private String deviceName;
-  private String serviceType;
+  private String serviceType = "_cafepp._tcp.";
   private int port;
   private String ipAddress;
   private String macAddress;
@@ -19,9 +23,14 @@ public class Device implements Serializable {
     this.deviceName = deviceName;
   }
   
-  public Device(String deviceName, String serviceType, String ipAddress, int port) {
+  public Device(String deviceName, String macAddress, String ipAddress) {
     this.deviceName = deviceName;
-    this.serviceType = serviceType;
+    this.macAddress = macAddress;
+    this.ipAddress = ipAddress;
+  }
+  
+  public Device(String deviceName, String ipAddress, int port) {
+    this.deviceName = deviceName;
     this.ipAddress = ipAddress;
     this.port = port;
   }
@@ -95,6 +104,27 @@ public class Device implements Serializable {
   
   public Device setTablet(boolean tablet) {
     isTablet = tablet;
+    return this;
+  }
+  
+  public NsdServiceInfo getNsdServiceInfo() {
+    NsdServiceInfo info = new NsdServiceInfo();
+    info.setServiceName(deviceName);
+    info.setServiceType(serviceType);
+    info.setPort(port);
+    try {
+      info.setHost(InetAddress.getByName(ipAddress));
+    } catch (UnknownHostException e) {
+      e.printStackTrace();
+    }
+    return info;
+  }
+  
+  public Device setNsdServiceInfo(NsdServiceInfo info) {
+    deviceName = info.getServiceName();
+    serviceType = info.getServiceType();
+    ipAddress = info.getHost().getHostAddress();
+    port = info.getPort();
     return this;
   }
 }
