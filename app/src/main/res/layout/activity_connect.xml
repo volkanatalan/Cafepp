@@ -33,27 +33,14 @@
             android:layout_marginBottom="5dp"
             android:background="@color/colorPrimary"/>
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/deviceNameTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
-            android:gravity="center_vertical">
-
-            <TextView
-                android:id="@+id/deviceNameTextView"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Device name"
-                android:textColor="@color/black"
-                android:textSize="20sp" />
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:srcCompat="@drawable/settings_grey"
-                android:onClick="onClickChangeDeviceName"/>
-        </LinearLayout>
+            android:text="@string/my_device"
+            android:textColor="@color/black"
+            android:textSize="20sp" />
 
         <LinearLayout
             android:id="@+id/listContainer"

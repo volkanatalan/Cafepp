@@ -24,4 +24,15 @@
         </attr>
     </declare-styleable>
 
+
+    <declare-styleable name="EditTextWithDeleteButton">
+        <attr name="android:textSize" />
+        <attr name="android:padding" />
+        <attr name="android:paddingStart" />
+        <attr name="android:paddingTop" />
+        <attr name="android:paddingEnd" />
+        <attr name="android:paddingBottom" />
+        <attr name="buttonSize" format="reference|dimension" />
+    </declare-styleable>
+
 </resources>

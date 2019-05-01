@@ -9,4 +9,9 @@
     <dimen name="connect_switch_font">20sp</dimen>
     <dimen name="label_font_size">20sp</dimen>
     <dimen name="pair_key_font_size">25sp</dimen>
+    <dimen name="menu_toolbar_height" >90dp</dimen>
+    <dimen name="menu_button_margin">20dp</dimen>
+    <dimen name="menu_search_text_size">22sp</dimen>
+    <dimen name="menu_search_button_size">50dp</dimen>
+    <dimen name="menu_toolbar_bottom_separator_height">5dp</dimen>
 </resources>

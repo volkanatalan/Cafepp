@@ -4,7 +4,10 @@ import android.util.Log;
 
 import net.cafepp.cafepp.objects.Device;
 
+import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
 /**
  * ClientThread's main purpose is to listen to the server.
@@ -13,6 +16,8 @@ import java.net.Socket;
 public class ClientThread implements Runnable {
   private final String TAG = "ClientThread";
   private Package mPackage;
+  private Socket mSocket;
+  private boolean allowNewThread = true;
   
   public ClientThread(Package aPackage) {
     mPackage = aPackage;
@@ -20,22 +25,33 @@ public class ClientThread implements Runnable {
   
   @Override
   public void run() {
-    Command command = mPackage.getCommand();
-    Device myDevice = mPackage.getSendingDevice();
-    Socket socket = mPackage.getSocket();
     Thread thread;
+    Command command = Command.LISTEN;
+    Device myDevice = mPackage.getSendingDevice();
+    Device receivingDevice = mPackage.getReceivingDevice();
+    
+    try {
+      InetAddress ip = InetAddress.getByName(receivingDevice.getIpAddress());
+      int port = receivingDevice.getPort();
+      mSocket = new Socket(ip, port);
+    } catch (UnknownHostException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    
     
     while (!Thread.currentThread().isInterrupted()) {
-      if (socket != null && !socket.isClosed()) {
+      if (mSocket != null && !mSocket.isClosed() && allowNewThread) {
         Log.d(TAG, "Listening for the inputs...");
-
-        CommunicationThread communicationThread =
-            new CommunicationThread(socket, command, myDevice);
+        allowNewThread = false;
+        
+        CommunicationThread communicationThread = new CommunicationThread(mSocket, command, myDevice);
         communicationThread.setOnInputListener(aPackage -> {
-          if (onPackageInputListener != null)
-            onPackageInputListener.onReceive(aPackage);
+          allowNewThread = true;
+          if (onPackageInputListener != null) onPackageInputListener.onReceive(aPackage);
         });
-
+        
         thread = new Thread(communicationThread);
         thread.start();
       }
@@ -64,6 +80,6 @@ public class ClientThread implements Runnable {
   }
   
   public Socket getSocket() {
-    return mPackage.getSocket();
+    return mSocket;
   }
 }

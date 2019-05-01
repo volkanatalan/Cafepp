@@ -22,6 +22,7 @@ public class ServerThread implements Runnable {
     if (mPackage != null) {
       Command command = mPackage.getCommand();
       Device myDevice = mPackage.getSendingDevice();
+      Thread thread;
   
       while (!Thread.currentThread().isInterrupted()) {
         if (serverSocket != null && !serverSocket.isClosed()) {
@@ -29,25 +30,26 @@ public class ServerThread implements Runnable {
             Log.d(TAG, "Listening for the inputs...");
         
             CommunicationThread communicationThread =
-                new CommunicationThread(serverSocket.accept(), command);
-            communicationThread.setMyDevice(myDevice);
+                new CommunicationThread(serverSocket.accept(), command, myDevice);
             communicationThread.setOnInputListener(aPackage -> {
               if (onPackageInputListener != null) onPackageInputListener.onReceive(aPackage);
             });
         
-            new Thread(communicationThread).start();
+            thread = new Thread(communicationThread);
+            thread.start();
         
           } catch (IOException e) {
-            Log.e(TAG, "Error Communicating to Client!");
+            Log.d(TAG, "Thread interrupting.");
             e.printStackTrace();
+            Thread.currentThread().interrupt();
           }
       
-        } else Log.e(TAG, "Server socket is null!");
+        } else{
+          Log.d(TAG, "Server socket is null. Thread interrupting.");
+          Thread.currentThread().interrupt();
+        }
       }
     }
-  
-    Log.d(TAG, "ServerThread is interrupted");
-    
   }
   
   private OnPackageInputListener onPackageInputListener;

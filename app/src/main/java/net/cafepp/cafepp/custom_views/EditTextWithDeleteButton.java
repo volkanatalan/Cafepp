@@ -1,10 +1,12 @@
 package net.cafepp.cafepp.custom_views;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.support.v4.content.ContextCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -16,7 +18,8 @@ public class EditTextWithDeleteButton extends LinearLayout {
   private EditText editText;
   private ImageView deleteImageView;
   private Context context;
-  private LayoutParams editTextLayoutParams;
+  private int paddingLeft, paddingTop, paddingRight, paddingBottom;
+  private int buttonSize, textSize;
   
   public EditTextWithDeleteButton(Context context) {
     super(context);
@@ -26,6 +29,7 @@ public class EditTextWithDeleteButton extends LinearLayout {
   public EditTextWithDeleteButton(Context context, AttributeSet attrs) {
     super(context, attrs);
     this.context = context;
+    setAttrs(attrs);
   }
   
   public EditTextWithDeleteButton(Context context, AttributeSet attrs, int defStyleAttr) {
@@ -36,24 +40,24 @@ public class EditTextWithDeleteButton extends LinearLayout {
   @Override
   protected void onAttachedToWindow() {
     super.onAttachedToWindow();
-    float screenDensity = getResources().getDisplayMetrics().density;
   
     setOrientation(HORIZONTAL);
     
     editText = new EditText(context);
     deleteImageView = new ImageView(context);
     
-    deleteImageView.setLayoutParams(new LayoutParams(
-        (int)(screenDensity * 50),
-        (int)(screenDensity * 50)));
+    LayoutParams buttonLP = new LayoutParams(buttonSize, buttonSize);
+    buttonLP.gravity = Gravity.CENTER_VERTICAL;
+    deleteImageView.setLayoutParams(buttonLP);
     deleteImageView.setImageResource(R.drawable.delete_x_red_rounded_square);
-    deleteImageView.setVisibility(INVISIBLE);
+    deleteImageView.setVisibility(GONE);
   
-    editTextLayoutParams = new LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
-    editTextLayoutParams.weight = 1;
-    editText.setLayoutParams(editTextLayoutParams);
-    editText.setPadding(20, 0, 20, 0);
-    editText.setTextSize(24f);
+    LayoutParams editTextLP = new LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+    editTextLP.weight = 1;
+    editTextLP.gravity = Gravity.BOTTOM;
+    editText.setLayoutParams(editTextLP);
+    editText.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
+    editText.setTextSize(textSize);
     editText.setTextColor(ContextCompat.getColor(context, R.color.white));
     editText.setTextAlignment(TEXT_ALIGNMENT_CENTER);
   
@@ -77,7 +81,7 @@ public class EditTextWithDeleteButton extends LinearLayout {
       public void afterTextChanged(Editable editable) {
         String text = editable.toString();
         if (text.equals(""))
-          deleteImageView.setVisibility(INVISIBLE);
+          deleteImageView.setVisibility(GONE);
         else
           deleteImageView.setVisibility(VISIBLE);
   
@@ -86,16 +90,31 @@ public class EditTextWithDeleteButton extends LinearLayout {
     });
   }
   
-  @Override
-  protected void onLayout(boolean changed, int l, int t, int r, int b) {
-    super.onLayout(changed, l, t, r, b);
-    int editTextMarginLeftRight = 10;
-    editTextLayoutParams.leftMargin = deleteImageView.getWidth() + editTextMarginLeftRight;
-    editTextLayoutParams.rightMargin = editTextMarginLeftRight;
-  }
-  
   public void afterTextChange(String text){
   
+  }
+  
+  private void setAttrs(AttributeSet set) {
+    if(set == null){
+      return;
+    }
+    
+    float dens = getResources().getDisplayMetrics().density;
+    
+    TypedArray ta = context.obtainStyledAttributes(set, R.styleable.EditTextWithDeleteButton);
+    
+    textSize = ta.getDimensionPixelSize(R.styleable.EditTextWithDeleteButton_android_textSize, 14);
+    buttonSize = ta.getDimensionPixelSize(R.styleable.EditTextWithDeleteButton_buttonSize, (int)(50 * dens));
+    paddingLeft = ta.getDimensionPixelSize(R.styleable.EditTextWithDeleteButton_android_padding, 0);
+    paddingTop = ta.getDimensionPixelSize(R.styleable.EditTextWithDeleteButton_android_padding, 0);
+    paddingRight = ta.getDimensionPixelSize(R.styleable.EditTextWithDeleteButton_android_padding, 0);
+    paddingBottom = ta.getDimensionPixelSize(R.styleable.EditTextWithDeleteButton_android_padding, 0);
+    paddingLeft = ta.getDimensionPixelSize(R.styleable.EditTextWithDeleteButton_android_paddingStart, 0);
+    paddingTop = ta.getDimensionPixelSize(R.styleable.EditTextWithDeleteButton_android_paddingTop, 0);
+    paddingRight = ta.getDimensionPixelSize(R.styleable.EditTextWithDeleteButton_android_paddingEnd, 0);
+    paddingBottom = ta.getDimensionPixelSize(R.styleable.EditTextWithDeleteButton_android_paddingBottom, 0);
+    
+    ta.recycle();
   }
   
   public EditText getEditText(){

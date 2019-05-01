@@ -11,7 +11,6 @@ public class PairDevice extends Device {
   public Device getDevice() {
     Device device = new Device();
     device.setDeviceName(getDeviceName());
-    device.setSocket(getSocket());
     device.setConnected(isConnected());
     device.setIpAddress(getIpAddress());
     device.setPort(getPort());
@@ -24,7 +23,6 @@ public class PairDevice extends Device {
   
   public PairDevice setDevice(Device device) {
     setDeviceName(device.getDeviceName());
-    setSocket(device.getSocket());
     setConnected(device.isConnected());
     setIpAddress(device.getIpAddress());
     setPort(device.getPort());

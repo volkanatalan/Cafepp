@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
@@ -25,13 +26,17 @@ import android.widget.TextView;
 
 import net.cafepp.cafepp.R;
 import net.cafepp.cafepp.adapters.AvailableDevicesListViewAdapter;
+import net.cafepp.cafepp.adapters.PairedDevicesAdapter;
 import net.cafepp.cafepp.connection.Package;
 import  net.cafepp.cafepp.connection.Command;
+import net.cafepp.cafepp.databases.DeviceDatabase;
+import net.cafepp.cafepp.fragments.ConnectFragment;
 import net.cafepp.cafepp.fragments.PairFragment;
-import net.cafepp.cafepp.fragments.ConnectSettingsDeviceNameFragment;
+import net.cafepp.cafepp.fragments.ChangeDeviceNameFragment;
 import net.cafepp.cafepp.objects.Device;
 import net.cafepp.cafepp.services.ClientService;
 
+import java.util.List;
 import java.util.Random;
 
 
@@ -39,21 +44,26 @@ public class ConnectActivity extends AppCompatActivity {
   
   private final String TAG = "ConnectActivity";
   public TextView deviceNameTextView;
+  private String deviceName;
   private Device myDevice;
-  private ListView availableDevicesListView;
-  private AvailableDevicesListViewAdapter foundDevicesAdapter;
+  private ListView pairedDevicesListView, availableDevicesListView;
+  private PairedDevicesAdapter pairedDevicesAdapter;
+  private AvailableDevicesListViewAdapter availableDevicesAdapter;
   public FrameLayout interlayer;
+  private DeviceDatabase deviceDatabase;
+  private List<Device> pairedDevices;
   
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_connect);
     deviceNameTextView = findViewById(R.id.deviceNameTextView);
+    pairedDevicesListView = findViewById(R.id.pairedDevicesListView);
     availableDevicesListView = findViewById(R.id.availableDevicesListView);
     interlayer = findViewById(R.id.interlayer);
     Switch switchFindDevices = findViewById(R.id.switchFindDevices);
     
-    configureListView();
+    configureListViews();
     getMyDevice();
   
     boolean isServiceRunning = isServiceRunningInForeground(this, ClientService.class);
@@ -61,6 +71,8 @@ public class ConnectActivity extends AppCompatActivity {
     Log.d(TAG, "Is Client Service running: " + isServiceRunning);
   
     switchFindDevices.setOnCheckedChangeListener(onCheckedChangeListener);
+  
+    deviceNameTextView.setOnClickListener(deviceNameTextViewOnClickListener);
   
     // Listen for the commands from Client Service.
     LocalBroadcastManager.getInstance(ConnectActivity.this).registerReceiver(
@@ -71,8 +83,7 @@ public class ConnectActivity extends AppCompatActivity {
   protected void onResume() {
     super.onResume();
   
-    String deviceName = getDeviceName();
-    
+    deviceName = getDeviceName();
     deviceNameTextView.setText(deviceName);
   }
   
@@ -80,7 +91,8 @@ public class ConnectActivity extends AppCompatActivity {
   protected void onDestroy() {
     // Stop listening for the commands from Client Service.
     LocalBroadcastManager.getInstance(ConnectActivity.this).unregisterReceiver(mMessageReceiver);
-    foundDevicesAdapter.clear();
+    availableDevicesAdapter.clear();
+    deviceDatabase.close();
     
     super.onDestroy();
   }
@@ -118,19 +130,43 @@ public class ConnectActivity extends AppCompatActivity {
       } else {
         Log.d(TAG, "Switch checked false.");
         
-        foundDevicesAdapter.clear();
+        availableDevicesAdapter.clear();
     
         // Stop ClientService.
         stopService(clientServiceIntent);
+        pairedDevicesAdapter.setAllDisconnected();
       }
     };
   
-  private void configureListView() {
-    foundDevicesAdapter = new AvailableDevicesListViewAdapter();
+  private void configureListViews() {
+    // Configure paired devices list view
+    deviceDatabase = new DeviceDatabase(this);
+    pairedDevices = deviceDatabase.getDevicesAsClient();
+    pairedDevicesAdapter = new PairedDevicesAdapter();
+    pairedDevicesAdapter.setPairedDevices(pairedDevices);
+    pairedDevicesListView.setOnItemClickListener((parent, view, position, id) -> {
+      Device device = pairedDevicesAdapter.getItem(position);
+    
+      FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+      ft.setCustomAnimations(R.anim.enter_from_bottom, R.anim.exit_to_top,
+          R.anim.enter_from_bottom, R.anim.exit_to_top)
+          .replace(R.id.fragmentContainer,
+              ConnectFragment.newInstance(device, mOnButtonClickListenerCF), "ConnectFragment")
+          .addToBackStack("ConnectFragment")
+          .commit();
+  
+      interlayer.setVisibility(View.VISIBLE);
+    });
+    pairedDevicesListView.setAdapter(pairedDevicesAdapter);
+  
+  
+    // Configure available devices list view
+    availableDevicesAdapter = new AvailableDevicesListViewAdapter();
     availableDevicesListView.setOnItemClickListener((parent, view, pos, id) -> {
       
-      Device targetDevice = foundDevicesAdapter.getItem(pos);
+      Device targetDevice = availableDevicesAdapter.getItem(pos);
       myDevice.setPairKey(generatePairKey());
+      myDevice.setPort(targetDevice.getPort());
       Package aPackage = new Package(Command.PAIR_REQ, myDevice, targetDevice);
   
       sendPackageToClientService(aPackage);
@@ -146,23 +182,97 @@ public class ConnectActivity extends AppCompatActivity {
       interlayer.setVisibility(View.VISIBLE);
     });
     
-    availableDevicesListView.setAdapter(foundDevicesAdapter);
+    availableDevicesListView.setAdapter(availableDevicesAdapter);
   }
+  
+  private View.OnClickListener deviceNameTextViewOnClickListener = v -> {
+    
+    // Set OnButtonClick listener of the ChangeDeviceNameFragment.
+    ChangeDeviceNameFragment.OnButtonClickListener listener =
+        new ChangeDeviceNameFragment.OnButtonClickListener() {
+          @Override
+          public void onClickCancel() {
+            getSupportFragmentManager().popBackStack();
+            interlayer.setVisibility(View.GONE);
+          }
+          
+          @Override
+          public void onClickConfirm(String deviceName) {
+            SharedPreferences.Editor editor = getSharedPreferences(
+                "ConnectSettings", Context.MODE_PRIVATE).edit();
+            editor.putString("deviceNameClient", deviceName);
+            editor.apply();
+            
+            ConnectActivity.this.deviceName = deviceName;
+            deviceNameTextView.setText(deviceName);
+            getSupportFragmentManager().popBackStack();
+            interlayer.setVisibility(View.GONE);
+          }
+        };
+    
+    // Open ChangeDeviceNameFragment.
+    interlayer.setVisibility(View.VISIBLE);
+    FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+    ft.setCustomAnimations(R.anim.enter_from_bottom, R.anim.exit_to_top,
+        R.anim.enter_from_bottom, R.anim.exit_to_top);
+    ft.replace(R.id.fragmentContainer, ChangeDeviceNameFragment.newInstance(deviceName, listener));
+    ft.addToBackStack("ConnectActivity");
+    ft.commit();
+  };
   
   private PairFragment.OnButtonClickListener mOnButtonClickListener =
       new PairFragment.OnButtonClickListener() {
     @Override
     public void onClickPair(Package aPackage) {
+      getSupportFragmentManager().popBackStack();
       aPackage.setCommand(Command.PAIR_CLIENT_ACCEPT);
       sendPackageToClientService(aPackage);
     }
   
     @Override
-    public void onClickCancel(Package aPackage) {
-      aPackage.setCommand(Command.PAIR_CLIENT_DENY);
+    public void onClickDecline(Package aPackage) {
+      getSupportFragmentManager().popBackStack();
+      aPackage.setCommand(Command.PAIR_CLIENT_DECLINE);
       sendPackageToClientService(aPackage);
     }
   };
+  
+  private ConnectFragment.OnButtonClickListener mOnButtonClickListenerCF =
+      new ConnectFragment.OnButtonClickListener() {
+        @Override
+        public void onClickConnect(Device device) {
+          sendPackageToClientService(new Package(Command.CONNECT, myDevice, device));
+          pairedDevicesAdapter.setConnected(device, true);
+          
+          getSupportFragmentManager().popBackStack();
+          interlayer.setVisibility(View.GONE);
+        }
+        
+        @Override
+        public void onClickDisconnect(Device device) {
+          sendPackageToClientService(new Package(Command.DISCONNECT_CLIENT, myDevice, device));
+          pairedDevicesAdapter.setConnected(device, false);
+  
+          getSupportFragmentManager().popBackStack();
+          interlayer.setVisibility(View.GONE);
+        }
+        
+        @Override
+        public void onClickCancel() {
+          getSupportFragmentManager().popBackStack();
+          interlayer.setVisibility(View.GONE);
+        }
+        
+        @Override
+        public void onClickUnpair(Device device) {
+          sendPackageToClientService(new Package(Command.UNPAIR_CLIENT, myDevice, device));
+          pairedDevicesAdapter.remove(device);
+          deviceDatabase.removeAsClient(device.getMacAddress());
+          
+          getSupportFragmentManager().popBackStack();
+          interlayer.setVisibility(View.GONE);
+        }
+      };
   
   public void sendCommandToClientService(Command command) {
     Intent intent = new Intent("ClientService");
@@ -184,14 +294,71 @@ public class ConnectActivity extends AppCompatActivity {
   
       if (aPackage != null) {
         Command command = aPackage.getCommand();
+        Device sendingDevice = aPackage.getSendingDevice();
+        Device receivingDevice = aPackage.getReceivingDevice();
   
         switch (command) {
           case FOUND:
-            foundDevicesAdapter.add(aPackage.getTargetDevice());
+            int pos = pairedDevicesAdapter.getPositionByMac(receivingDevice.getMacAddress());
+            
+            // If there is not any device with the same MAC address in the
+            // paired devices list and the device allows to pair, add the
+            // found device to available devices.
+            if (pos < 0) {
+              if (receivingDevice.isAllowPairReq())
+                availableDevicesAdapter.add(receivingDevice);
+            }
+            
+            else {
+              // If there is a device with the same MAC address in the paired
+              // devices list and its name is also the same, set it as found.
+              boolean hasSameName = pairedDevices.get(pos).getDeviceName().equals(receivingDevice.getDeviceName());
+              if (hasSameName)
+                pairedDevicesAdapter.setFoundByMac(receivingDevice, true);
+              
+              else {
+                // If there is a device with the same MAC address in the paired
+                // devices list but its name is different, change the name.
+                receivingDevice.setId(pairedDevices.get(pos).getId());
+                deviceDatabase.updateAsClient(receivingDevice);
+                pairedDevicesAdapter.setPairedDevices(deviceDatabase.getDevicesAsServer());
+                pairedDevicesAdapter.setFoundByMac(receivingDevice, true);
+              }
+            }
+            break;
+  
+          case LOST:
+            pairedDevicesAdapter.setFoundByName(receivingDevice.getDeviceName(), false);
             break;
             
           case CLEAR:
-            foundDevicesAdapter.clear();
+            availableDevicesAdapter.clear();
+            break;
+            
+          case PAIR_SERVER_DECLINE:
+            List<Fragment> fragments = getSupportFragmentManager().getFragments();
+            for (int i = 0; i < fragments.size(); i++) {
+              if (fragments.get(i) instanceof PairFragment) {
+                String fragmentMac = ((PairFragment)fragments.get(i)).getPackage().getReceivingDevice().getMacAddress();
+                String packageMac = sendingDevice.getMacAddress();
+                if (fragmentMac.equals(packageMac)) {
+                  if (i == fragments.size() - 1) {
+                    getSupportFragmentManager().popBackStack();
+                  } else {
+                    fragments.remove(i);
+                    break;
+                  }
+                }
+              }
+            }
+            break;
+            
+          case PAIRED:
+            // Remove paired device from available devices list view.
+            availableDevicesAdapter.remove(receivingDevice.getMacAddress());
+            // Add paired device to paired devices list view.
+            receivingDevice.setFound(true);
+            pairedDevicesAdapter.add(receivingDevice);
             break;
         }
       }
@@ -212,16 +379,6 @@ public class ConnectActivity extends AppCompatActivity {
       }
     }
     return false;
-  }
-  
-  public void onClickChangeDeviceName(View view) {
-    interlayer.setVisibility(View.VISIBLE);
-    FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-    ft.setCustomAnimations(R.anim.enter_from_bottom, R.anim.exit_to_top,
-        R.anim.enter_from_bottom, R.anim.exit_to_top);
-    ft.replace(R.id.fragmentContainer, new ConnectSettingsDeviceNameFragment());
-    ft.addToBackStack("ConnectActivity");
-    ft.commit();
   }
   
   private void getMyDevice() {

@@ -1,5 +1,6 @@
 package net.cafepp.cafepp.services;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -26,27 +27,31 @@ import net.cafepp.cafepp.connection.Command;
 import net.cafepp.cafepp.connection.CommunicationThread;
 import net.cafepp.cafepp.connection.Package;
 import net.cafepp.cafepp.connection.ServerThread;
+import net.cafepp.cafepp.databases.DeviceDatabase;
 import net.cafepp.cafepp.objects.Device;
-import net.cafepp.cafepp.objects.PairedDevice;
+import net.cafepp.cafepp.objects.PairDevice;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ServerService extends Service {
   
   private static final String TAG = "ServerService";
+  private boolean isReregistering = false;
+  private boolean allowUnregister = false;
   private ServerThread serverThread;
-  private Thread threadServer;
+  private Thread thread;
   private ServerSocket serverSocket;
   private Device myDevice;
+  private NsdServiceInfo nsdServiceInfo;
   private NsdManager nsdManager;
   private NsdManager.RegistrationListener registrationListener;
-  private List<PairedDevice> pairWaitingDevices = new ArrayList<>();
+  private List<PairDevice> pairWaitingDevices = new ArrayList<>();
   private List<Device> pairedDevices = new ArrayList<>();
+  private List<Device> connectedDevices = new ArrayList<>();
   
   @Override
   public void onCreate() {
@@ -72,7 +77,7 @@ public class ServerService extends Service {
                                     .setContentTitle(getString(R.string.cafépp_allcaps))
                                     .setTicker(getString(R.string.cafépp_allcaps))
                                     .setContentText(getString(R.string.server))
-                                    .setSmallIcon(R.drawable.wifi)
+                                    .setSmallIcon(R.drawable.wifi_connected)
                                     .setLargeIcon(Bitmap.createScaledBitmap(
                                         icon, 128, 128, false))
                                     .setContentIntent(pNotificationIntent)
@@ -86,21 +91,22 @@ public class ServerService extends Service {
   
   
     initializeRegistrationListener();
-    try {
-      registerService();
-    } catch (UnknownHostException e) {
-      e.printStackTrace();
-    }
+    registerService();
   }
   
   @Override
   public void onDestroy() {
     Log.d(TAG, "In onDestroy");
-    if (threadServer != null) unregisterService();
+    if (thread != null) unregisterService();
+    try {
+      serverSocket.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
     super.onDestroy();
   }
   
-  private void registerService() throws UnknownHostException {
+  private void registerService(){
     myDevice = new Device();
     myDevice.setDeviceName(getDeviceName())
         .setTablet(getResources().getBoolean(R.bool.isTablet))
@@ -108,30 +114,35 @@ public class ServerService extends Service {
         .setMacAddress(getMacAddress());
   
     try {
-      serverSocket = new ServerSocket(0);
+      serverSocket = new ServerSocket(myDevice.getPort());
       int port = serverSocket.getLocalPort();
       myDevice.setPort(port);
       Log.d(TAG, "Server socket created! Port: " + port);
     
+      nsdServiceInfo = new NsdServiceInfo();
+      nsdServiceInfo.setServiceName(myDevice.getDeviceName());
+      nsdServiceInfo.setServiceType(myDevice.getServiceType());
+      nsdServiceInfo.setHost(InetAddress.getByName(myDevice.getIpAddress()));
+      nsdServiceInfo.setPort(myDevice.getPort());
+      
+      Log.d(TAG, "Registering to NSD service.");
+      nsdManager = (NsdManager) getSystemService(Context.NSD_SERVICE);
+      nsdManager.registerService(nsdServiceInfo, NsdManager.PROTOCOL_DNS_SD, registrationListener);
+  
     } catch (IOException e) {
-      e.printStackTrace();
       Log.e(TAG, "Error Starting Server: " + e.getMessage());
+      e.printStackTrace();
     }
-    
-    NsdServiceInfo nsdServiceInfo = new NsdServiceInfo();
-    nsdServiceInfo.setServiceName(myDevice.getDeviceName());
-    nsdServiceInfo.setServiceType(myDevice.getServiceType());
-    nsdServiceInfo.setHost(InetAddress.getByName(myDevice.getIpAddress()));
-    nsdServiceInfo.setPort(myDevice.getPort());
-    
-    Log.d(TAG, "Registering to nsd service.");
-    nsdManager = (NsdManager) getSystemService(Context.NSD_SERVICE);
-    nsdManager.registerService(
-        nsdServiceInfo, NsdManager.PROTOCOL_DNS_SD, registrationListener);
   }
   
-  public void unregisterService() {
-    nsdManager.unregisterService(registrationListener);
+  private void unregisterService() {
+    Log.d(TAG, "In unregisterService");
+    if (allowUnregister){
+      Log.d(TAG, "Unregistering is allowed.");
+      allowUnregister = false;
+      nsdManager.unregisterService(registrationListener);
+    } else
+      Log.e(TAG, "Unregistering is not allowed.");
   }
   
   private void initializeRegistrationListener() {
@@ -139,23 +150,41 @@ public class ServerService extends Service {
       @Override
       public void onServiceRegistered(NsdServiceInfo serviceInfo) {
         Log.d(TAG, "Service registered: " + serviceInfo.getServiceName());
-        Log.d(TAG, "ServerService is starting!");
         
         serverThread = new ServerThread(serverSocket);
         serverThread.setPackage(new Package(Command.LISTEN, myDevice, null));
         serverThread.setOnPackageInputListener(
             aPackage -> resolvePackage(aPackage));
         
-        threadServer = new Thread(serverThread);
-        threadServer.start();
+        thread = new Thread(serverThread);
+        thread.start();
+  
+        allowUnregister = true;
+        
+        sendPackageToDeviceActivity(new Package(Command.REGISTERED, null, null));
       }
   
       @Override
       public void onServiceUnregistered(NsdServiceInfo serviceInfo) {
         Log.d(TAG, "Service unregistered: " + serviceInfo.getServiceName());
-        if (!serverSocket.isClosed()){
-          threadServer.interrupt();
-          threadServer = null;
+        
+        if (!serverSocket.isClosed() && thread != null){
+          thread.interrupt();
+          thread = null;
+        }
+        
+        if (isReregistering) {
+          try {
+            Thread.sleep(1000);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+          Log.d(TAG, "Reregistering to NSD service.");
+          isReregistering = false;
+          nsdManager.registerService(nsdServiceInfo, NsdManager.PROTOCOL_DNS_SD, registrationListener);
+          
+        } else {
+          sendPackageToDeviceActivity(new Package(Command.UNREGISTERED, null, null));
         }
       }
       
@@ -173,89 +202,203 @@ public class ServerService extends Service {
     };
   }
   
+  private void reregister() {
+    Log.d(TAG, "In reregister.");
+    isReregistering = true;
+    unregisterService();
+  }
+  
+  private void yesSir(Command command) {
+    switch (command) {
+      case ALLOW_PAIR:
+        Log.d(TAG, "In ALLOW_PAIR.");
+        myDevice.setAllowPairReq(true);
+        reregister();
+        break;
+        
+      case REFUSE_PAIR:
+        Log.d(TAG, "In REFUSE_PAIR.");
+        myDevice.setAllowPairReq(false);
+        reregister();
+        break;
+    }
+  }
+  
   private void resolvePackage(Package aPackage) {
     Command command = aPackage.getCommand();
-    Device targetDevice;
+    Device sendingDevice = aPackage.getSendingDevice();
+    Device receivingDevice = aPackage.getReceivingDevice();
+    int position;
   
     switch (command) {
       case PAIR_REQ:
         Log.d(TAG, "PAIR_REQ");
-        PairedDevice pairedDevice = new PairedDevice(aPackage.getSendingDevice());
-        pairedDevice.setOnPairedListener(onPairedListener);
-        pairWaitingDevices.add(pairedDevice);
+        PairDevice pairDevice = new PairDevice(sendingDevice);
+        pairDevice.setOnPairedListener(onPairedListener);
+        pairWaitingDevices.add(pairDevice);
         sendPackageToDeviceActivity(aPackage);
+        break;
+        
+      case NOT_PAIRED:
+        Log.d(TAG, "NOT_PAIRED");
+        position = getPDListPositionByMac(sendingDevice.getMacAddress());
+        if (position > -1) {
+          pairedDevices.remove(position);
+          sendPackageToDeviceActivity(aPackage);
+          DeviceDatabase deviceDatabase = new DeviceDatabase(this);
+          deviceDatabase.removeAsServer(sendingDevice.getMacAddress());
+        }
         break;
         
       case PAIR_SERVER_ACCEPT:
         Log.d(TAG, "PAIR_SERVER_ACCEPT");
-        targetDevice = aPackage.getTargetDevice();
-        for (int i = 0; i < pairWaitingDevices.size(); i++) {
-          if (pairWaitingDevices.get(i).getMacAddress().equals(targetDevice.getMacAddress())) {
-            pairWaitingDevices.get(i).setServerPaired(true);
-            break;
-          }
-        }
-  
-        // Inform the client that server has accepted to pair.
+        position = getPWDListPositionByMac(receivingDevice.getMacAddress());
+        if (position != -1) pairWaitingDevices.get(position).setServerPaired(true);
+        pairedDevices.add(receivingDevice);
         sendPackageToClient(aPackage);
         break;
         
-      case PAIR_SERVER_DENY:
-        Log.d(TAG, "PAIR_SERVER_DENY");
-        targetDevice = aPackage.getTargetDevice();
-        for (int i = 0; i < pairWaitingDevices.size(); i++) {
-          if (pairWaitingDevices.get(i).getMacAddress().equals(targetDevice.getMacAddress())) {
-            pairWaitingDevices.remove(i);
-            break;
-          }
-        }
-        
-        // Inform the client that server has denied to pair.
+      case PAIR_SERVER_DECLINE:
+        Log.d(TAG, "PAIR_SERVER_DECLINE");
+        position = getPWDListPositionByMac(receivingDevice.getMacAddress());
+        if (position != -1) pairWaitingDevices.remove(position);
         sendPackageToClient(aPackage);
         break;
         
       case PAIR_CLIENT_ACCEPT:
         Log.d(TAG, "PAIR_CLIENT_ACCEPT");
-        targetDevice = aPackage.getSendingDevice();
-        for (int i = 0; i < pairWaitingDevices.size(); i++) {
-          if (pairWaitingDevices.get(i).getMacAddress().equals(targetDevice.getMacAddress())) {
-            pairWaitingDevices.get(i).setServerPaired(true);
-            break;
-          }
-        }
+        position = getPWDListPositionByMac(sendingDevice.getMacAddress());
+        if (position != -1) pairWaitingDevices.get(position).setClientPaired(true);
+        sendPackageToDeviceActivity(aPackage);
         break;
         
-      case PAIR_CLIENT_DENY:
-        Log.d(TAG, "PAIR_CLIENT_DENY");
+      case PAIR_CLIENT_DECLINE:
+        Log.d(TAG, "PAIR_CLIENT_DECLINE");
+        position = getPWDListPositionByMac(sendingDevice.getMacAddress());
+        if (position != -1) pairWaitingDevices.remove(position);
+        sendPackageToDeviceActivity(aPackage);
+        break;
+        
+      case CONNECT:
+        Log.d(TAG, "CONNECT");
+        connectedDevices.add(sendingDevice);
+        sendPackageToDeviceActivity(aPackage);
+        break;
+        
+      case DISCONNECT_CLIENT:
+        Log.d(TAG, "DISCONNECT_CLIENT");
+        position = getCDListPositionByMac(sendingDevice.getMacAddress());
+        if (position != -1) connectedDevices.remove(position);
+        sendPackageToDeviceActivity(aPackage);
+        break;
+        
+      case DISCONNECT_SERVER:
+        Log.d(TAG, "DISCONNECT_SERVER");
+        position = getCDListPositionByMac(receivingDevice.getMacAddress());
+        if (position != -1) connectedDevices.remove(position);
+        sendPackageToClient(aPackage);
+        break;
+        
+      case UNPAIR_CLIENT:
+        Log.d(TAG, "UNPAIR_CLIENT");
+        position = getCDListPositionByMac(receivingDevice.getMacAddress());
+        if (position != -1) connectedDevices.remove(position);
+        position = getPDListPositionByMac(receivingDevice.getMacAddress());
+        if (position != -1) pairedDevices.remove(position);
+        sendPackageToDeviceActivity(aPackage);
+        break;
+        
+      case UNPAIR_SERVER:
+        Log.d(TAG, "UNPAIR_SERVER");
+        position = getCDListPositionByMac(receivingDevice.getMacAddress());
+        if (position != -1) connectedDevices.remove(position);
+        position = getPDListPositionByMac(receivingDevice.getMacAddress());
+        if (position != -1) pairedDevices.remove(position);
+        sendPackageToClient(aPackage);
         break;
     }
   }
   
-  private PairedDevice.OnPairedListener onPairedListener = (isBothConfirmed, device) -> {
+  private PairDevice.OnPairedListener onPairedListener = (isBothConfirmed, device) -> {
     if (isBothConfirmed) {
+      // Add device to pairedDevices list.
       pairedDevices.add(device);
+  
+      // Remove device from pairWaitingDevices list.
+      int pos = getPWDListPositionByMac(device.getMacAddress());
+      pairWaitingDevices.remove(pos);
       
-      for (int i = 0; i < pairWaitingDevices.size(); i++) {
-        if (pairWaitingDevices.get(i).getMacAddress().equals(device.getMacAddress())) {
-          //noinspection SuspiciousListRemoveInLoop
-          pairWaitingDevices.remove(i);
-          break;
-        }
-      }
+      // Add device to database.
+      DeviceDatabase deviceDatabase = new DeviceDatabase(this);
+      deviceDatabase.addAsServer(device.getDevice());
+  
+      // Inform Devices Activity that there is a paired device.
+      Package aPackage = new Package(Command.PAIRED, null, device);
+      sendPackageToDeviceActivity(aPackage);
     }
   };
   
+  private int getPWDListPositionByMac(String macAddress) {
+    if (pairWaitingDevices.size() > 0) {
+      for (int i = 0; i < pairWaitingDevices.size(); i++) {
+        String mac = pairWaitingDevices.get(i).getMacAddress();
+        if (mac.equals(macAddress)) {
+          return i;
+          
+        } else {
+          Log.e(TAG, "There is not any device with the same MAC address in pairWaitingDevices list.");
+        }
+      }
+    } else {
+      Log.e(TAG, "pairWaitingDevices list is empty.");
+    }
+    return -1;
+  }
+  
+  private int getPDListPositionByMac(String macAddress) {
+    if (pairedDevices.size() > 0) {
+      for (int i = 0; i < pairedDevices.size(); i++) {
+        String mac = pairedDevices.get(i).getMacAddress();
+        if (mac.equals(macAddress)) {
+          return i;
+          
+        } else {
+          Log.e(TAG, "There is not any device with the same MAC address in pairedDevices list.");
+        }
+      }
+    } else {
+      Log.e(TAG, "pairedDevices list is empty.");
+    }
+    return -1;
+  }
+  
+  private int getCDListPositionByMac(String macAddress) {
+    if (connectedDevices.size() > 0) {
+      for (int i = 0; i < connectedDevices.size(); i++) {
+        String mac = connectedDevices .get(i).getMacAddress();
+        if (mac.equals(macAddress)) {
+          return i;
+          
+        } else {
+          Log.e(TAG, "There is not any device with the same MAC address in connectedDevices list.");
+        }
+      }
+    } else {
+      Log.e(TAG, "connectedDevices list is empty.");
+    }
+    return -1;
+  }
+  
   private void sendPackageToClient(Package aPackage) {
-      Command command = aPackage.getCommand();
-      
-      CommunicationThread communicationThread = new CommunicationThread(command);
-      communicationThread.setMyDevice(aPackage.getSendingDevice());
-      communicationThread.setTargetDevice(aPackage.getTargetDevice());
-      new Thread(communicationThread).start();
+    aPackage.setSendingDevice(myDevice);
+    aPackage.getReceivingDevice().setPort(myDevice.getPort());
+    
+    CommunicationThread communicationThread = new CommunicationThread(aPackage);
+    new Thread(communicationThread).start();
   }
   
   private void sendPackageToDeviceActivity(Package aPackage) {
-    Log.d(TAG, "Sending pair request to device activity");
+    Log.d(TAG, "Sending package to device activity: " + aPackage.getCommand());
     Intent intent = new Intent("DeviceActivity");
     intent.putExtra("Message", aPackage);
     LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
@@ -267,12 +410,14 @@ public class ServerService extends Service {
       Object obj = intent.getSerializableExtra("Message");
   
       if (obj != null) {
-        if (obj instanceof Package) {
+        if (obj instanceof Command) {
+          yesSir((Command) obj);
+          
+        } else if (obj instanceof Package) {
           Package aPackage = (Package) obj;
           resolvePackage(aPackage);
         }
       }
-    
     }
   };
   
@@ -281,6 +426,7 @@ public class ServerService extends Service {
     return Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
   }
   
+  @SuppressLint("HardwareIds")
   private String getMacAddress() {
     WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
     WifiInfo wInfo = wifiManager.getConnectionInfo();
@@ -289,7 +435,7 @@ public class ServerService extends Service {
   
   private String getDeviceName() {
     SharedPreferences sharedPreferences = getSharedPreferences("ConnectSettings", Context.MODE_PRIVATE);
-    return sharedPreferences.getString("deviceName", getString(R.string.cafepp_device));
+    return sharedPreferences.getString("deviceNameServer", getString(R.string.main_device));
   }
   
   @Override

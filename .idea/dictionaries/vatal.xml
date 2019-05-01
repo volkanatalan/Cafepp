@@ -2,6 +2,9 @@
   <dictionary name="vatal">
     <words>
       <w>interlayer</w>
+      <w>reregister</w>
+      <w>reregistering</w>
+      <w>unpair</w>
       <w>unregistration</w>
     </words>
   </dictionary>

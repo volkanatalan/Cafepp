@@ -5,8 +5,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
@@ -19,40 +21,53 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CheckedTextView;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.Switch;
+import android.widget.TextView;
 
 import net.cafepp.cafepp.R;
-import net.cafepp.cafepp.adapters.DevicesListViewAdapter;
+import net.cafepp.cafepp.adapters.PairedDevicesAdapter;
 import net.cafepp.cafepp.connection.Command;
 import net.cafepp.cafepp.connection.Package;
 import net.cafepp.cafepp.databases.DeviceDatabase;
+import net.cafepp.cafepp.fragments.ChangeDeviceNameFragment;
+import net.cafepp.cafepp.fragments.ConnectFragment;
 import net.cafepp.cafepp.fragments.PairFragment;
 import net.cafepp.cafepp.objects.Device;
 import net.cafepp.cafepp.services.ServerService;
 
+import java.io.Serializable;
 import java.util.List;
 
 public class DevicesActivity extends AppCompatActivity
     implements NavigationView.OnNavigationItemSelectedListener {
   
   private final String TAG = "DevicesActivity";
-  private FrameLayout fragmentContainer;
+  public FrameLayout interlayer;
+  private DeviceDatabase deviceDatabase;
+  private PairedDevicesAdapter pairedDevicesAdapter;
+  private Switch connectSwitch;
+  private CheckedTextView checkedTextView;
+  private TextView deviceNameTextView;
+  private String deviceName;
   
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_devices);
-    ListView registeredDevicesListView = findViewById(R.id.registeredDevicesListView);
-    Switch connectSwitch = findViewById(R.id.connectSwitch);
-    fragmentContainer = findViewById(R.id.fragmentContainerDevicesActivity);
+    ListView pairedDevicesListView = findViewById(R.id.pairedDevicesListView);
+    connectSwitch = findViewById(R.id.connectSwitch);
+    checkedTextView = findViewById(R.id.checkedTextView);
+    deviceNameTextView = findViewById(R.id.deviceNameTextView);
+    interlayer = findViewById(R.id.interlayer);
   
     boolean isServiceRunning = isServiceRunningInForeground(this, ServerService.class);
     Log.d(TAG, "isServiceRunning: " + isServiceRunning);
   
     connectSwitch.setChecked(isServiceRunning);
-    setCheckedChangeListener(connectSwitch);
+    setSwitchCheckedChangeListener(connectSwitch);
     
     Toolbar toolbar = findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
@@ -66,28 +81,40 @@ public class DevicesActivity extends AppCompatActivity
     NavigationView navigationView = findViewById(R.id.nav_view);
     navigationView.setNavigationItemSelectedListener(this);
   
+    checkedTextView.setOnClickListener(v -> setTextViewChecked(checkedTextView.isChecked(), true));
+    
+    deviceNameTextView.setOnClickListener(deviceNameTextViewOnClickListener);
+  
     LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter("DeviceActivity"));
   
-    DeviceDatabase deviceDatabase = new DeviceDatabase(getApplicationContext());
+    deviceDatabase = new DeviceDatabase(getApplicationContext());
   
-    if (deviceDatabase.getDevices().size() == 0) {
-      deviceDatabase.add(new Device("Aşçı"));
-      deviceDatabase.add(new Device("Garson1"));
-      deviceDatabase.add(new Device("Garson2"));
-      deviceDatabase.add(new Device("Garson3"));
-      deviceDatabase.add(new Device("Kasa"));
+    if (deviceDatabase.getDevicesAsServer().size() == 0) {
+      deviceDatabase.addAsServer(new Device("Aşçı"));
+      deviceDatabase.addAsServer(new Device("Garson1"));
+      deviceDatabase.addAsServer(new Device("Garson2"));
+      deviceDatabase.addAsServer(new Device("Garson3"));
+      deviceDatabase.addAsServer(new Device("Kasa"));
     }
   
-    List<Device> devices = deviceDatabase.getDevices();
-    DevicesListViewAdapter adapter = new DevicesListViewAdapter(devices, false);
+    List<Device> devices = deviceDatabase.getDevicesAsServer();
+    pairedDevicesAdapter = new PairedDevicesAdapter(devices);
+    pairedDevicesAdapter.setConnected(1, true);
   
-    registeredDevicesListView.setAdapter(adapter);
-    adapter.setConnected(1, true);
+    pairedDevicesListView.setAdapter(pairedDevicesAdapter);
+  }
+  
+  @Override
+  protected void onResume() {
+    super.onResume();
+    deviceName = getDeviceName();
+    deviceNameTextView.setText(deviceName);
   }
   
   @Override
   protected void onDestroy() {
     LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+    deviceDatabase.close();
     super.onDestroy();
   }
   
@@ -148,78 +175,197 @@ public class DevicesActivity extends AppCompatActivity
     return true;
   }
   
-  private void setCheckedChangeListener(Switch s) {
+  private void setSwitchCheckedChangeListener(Switch s) {
     s.setOnCheckedChangeListener((buttonView, isChecked) -> {
       Intent serverServiceIntent = new Intent(this, ServerService.class);
+  
+      // Check checkedTextView false.
+      setTextViewChecked(true, false);
       
       if (isChecked) {
         Log.d(TAG, "Switch checked true");
+        checkedTextView.setVisibility(View.VISIBLE);
         startService(serverServiceIntent);
         
       } else {
         Log.d(TAG, "Switch checked false");
         stopService(serverServiceIntent);
-        
+        checkedTextView.setVisibility(View.GONE);
       }
     });
   }
   
+  private void setTextViewChecked(boolean isChecked, boolean sendMessage) {
+    // Make views unable.
+    connectSwitch.setEnabled(false);
+    checkedTextView.setEnabled(false);
+  
+    // Change checkedTextView's mark.
+    if (checkedTextView.isChecked())
+      checkedTextView.setCheckMarkDrawable(R.drawable.checkboxtrueunabled);
+    else checkedTextView.setCheckMarkDrawable(R.drawable.checkboxfalseunabled);
+  
+    // Change checkedTextView's text.
+    String notCheckedText = getResources().getString(R.string.only_visible_to_paired_devices);
+    String checkedText = getResources().getString(R.string.visible_to_every_device);
+    String text = isChecked ? notCheckedText : checkedText;
+  
+    checkedTextView.setText(text);
+    checkedTextView.setChecked(!isChecked);
+    
+    // Send Command to Server Service.
+    if (sendMessage) {
+      Command command = isChecked ? Command.REFUSE_PAIR : Command.ALLOW_PAIR;
+      sendMessageToServerService(command);
+    }
+  }
+  
+  private View.OnClickListener deviceNameTextViewOnClickListener = v -> {
+  
+    // Set OnButtonClick listener of the ChangeDeviceNameFragment.
+    ChangeDeviceNameFragment.OnButtonClickListener buttonClickListenerCDNF =
+        new ChangeDeviceNameFragment.OnButtonClickListener() {
+          @Override
+          public void onClickCancel() {
+            getSupportFragmentManager().popBackStack();
+            interlayer.setVisibility(View.GONE);
+          }
+        
+          @Override
+          public void onClickConfirm(String deviceName) {
+            SharedPreferences.Editor editor = getSharedPreferences(
+                "ConnectSettings", Context.MODE_PRIVATE).edit();
+            editor.putString("deviceNameServer", deviceName);
+            editor.apply();
+          
+            DevicesActivity.this.deviceName = deviceName;
+            deviceNameTextView.setText(deviceName);
+            getSupportFragmentManager().popBackStack();
+            interlayer.setVisibility(View.GONE);
+          }
+        };
+    
+    // Open ChangeDeviceNameFragment.
+    interlayer.setVisibility(View.VISIBLE);
+    FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+    ft.setCustomAnimations(R.anim.enter_from_bottom, R.anim.exit_to_top,
+        R.anim.enter_from_bottom, R.anim.exit_to_top)
+        .replace(R.id.fragmentContainer, ChangeDeviceNameFragment.newInstance(
+            deviceName, buttonClickListenerCDNF), "ChangeDeviceNameFragment")
+        .addToBackStack("ChangeDeviceNameFragment");
+    ft.commit();
+  };
+  
   private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
     @Override
     public void onReceive(Context context, Intent intent) {
-      // Get extra data included in the Intent
+      // Get extra data included in the Intent.
       Package aPackage = (Package) intent.getSerializableExtra("Message");
       Command command = aPackage.getCommand();
+      Device sendingDevice = aPackage.getSendingDevice();
+      Device receivingDevice = aPackage.getReceivingDevice();
+      if (sendingDevice != null && receivingDevice != null)
+        sendingDevice.setSocket(receivingDevice.getSocket());
       Log.d(TAG, "BroadcastReceiver command: " + command);
   
       switch (command) {
+        case REGISTERED:
+          connectSwitch.setEnabled(true);
+          checkedTextView.setCheckMarkDrawable(R.drawable.checkbox_selector);
+          checkedTextView.setEnabled(true);
+          break;
+          
+        case UNREGISTERED:
+          connectSwitch.setEnabled(true);
+          checkedTextView.setCheckMarkDrawable(R.drawable.checkbox_selector);
+          checkedTextView.setEnabled(true);
+          break;
+          
         case PAIR_REQ:
           Log.d(TAG, "PAIR_REQ");
-          Device targetDevice = aPackage.getSendingDevice();
-          Package answerPackage = new Package(Command.PAIR_ANSWER, null, targetDevice);
-  
-          fragmentContainer.setVisibility(View.VISIBLE);
-  
+          Package answerPackage = new Package(Command.PAIR_ANSWER, null, sendingDevice);
+          
+          interlayer.setVisibility(View.VISIBLE);
+          
           FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
           ft.setCustomAnimations(R.anim.enter_from_bottom, R.anim.exit_to_top,
               R.anim.enter_from_bottom, R.anim.exit_to_top)
-              .replace(R.id.fragmentContainerDevicesActivity, PairFragment.newInstance(
-                  answerPackage, mOnButtonClickListener), "PairFragment")
+              .replace(R.id.fragmentContainer, PairFragment.newInstance(
+                  answerPackage, mOnButtonClickListenerPF), "PairFragment")
               .addToBackStack("PairFragment")
               .commit();
           break;
           
-        case PAIR_CLIENT_DENY:
-          Log.d(TAG, "PAIR_CLIENT_DENY");
-          fragmentContainer.setVisibility(View.GONE);
+        case PAIR_CLIENT_DECLINE:
+          Log.d(TAG, "PAIR_CLIENT_DECLINE");
+          List<Fragment> fragments = getSupportFragmentManager().getFragments();
+          for (int i = 0; i < fragments.size(); i++) {
+            if (fragments.get(i) instanceof PairFragment) {
+              String fragmentMac = ((PairFragment)fragments.get(i)).getPackage().getReceivingDevice().getMacAddress();
+              String packageMac = "";
+              if (sendingDevice != null) packageMac = sendingDevice.getMacAddress();
+              if (fragmentMac.equals(packageMac)) {
+                if (i == fragments.size() - 1) {
+                  getSupportFragmentManager().popBackStack();
+                } else {
+                  fragments.remove(i);
+                  break;
+                }
+              }
+            }
+          }
+          break;
+          
+        case NOT_PAIRED:
+          Log.d(TAG, "PAIRED");
+          pairedDevicesAdapter.remove(sendingDevice);
           break;
           
         case PAIRED:
           Log.d(TAG, "PAIRED");
-          fragmentContainer.setVisibility(View.GONE);
+          if (receivingDevice != null) receivingDevice.setFound(true);
+          pairedDevicesAdapter.add(receivingDevice);
+          break;
+          
+        case CONNECT:
+          Log.d(TAG, "CONNECT");
+          if (receivingDevice != null) receivingDevice.setConnected(true);
+          pairedDevicesAdapter.setConnected(sendingDevice, true);
+          break;
+          
+        case DISCONNECT_CLIENT:
+          Log.d(TAG, "DISCONNECT_CLIENT");
+          pairedDevicesAdapter.setConnected(sendingDevice, false);
+          break;
+          
+        case UNPAIR_CLIENT:
+          Log.d(TAG, "UNPAIR_CLIENT");
+          pairedDevicesAdapter.remove(sendingDevice);
           break;
       }
     }
   };
   
-  private PairFragment.OnButtonClickListener mOnButtonClickListener =
+  private PairFragment.OnButtonClickListener mOnButtonClickListenerPF =
       new PairFragment.OnButtonClickListener() {
     @Override
     public void onClickPair(Package aPackage) {
+      interlayer.setVisibility(View.GONE);
       aPackage.setCommand(Command.PAIR_SERVER_ACCEPT);
       sendMessageToServerService(aPackage);
     }
   
     @Override
-    public void onClickCancel(Package aPackage) {
-      aPackage.setCommand(Command.PAIR_SERVER_DENY);
+    public void onClickDecline(Package aPackage) {
+      interlayer.setVisibility(View.GONE);
+      aPackage.setCommand(Command.PAIR_SERVER_DECLINE);
       sendMessageToServerService(aPackage);
     }
   };
   
-  private void sendMessageToServerService(Package aPackage) {
+  private void sendMessageToServerService(Serializable serializable) {
     Intent intent = new Intent("ServerService");
-    intent.putExtra("Message", aPackage);
+    intent.putExtra("Message", serializable);
     LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
   }
   
@@ -231,5 +377,10 @@ public class DevicesActivity extends AppCompatActivity
       }
     }
     return false;
+  }
+  
+  private String getDeviceName() {
+    SharedPreferences sharedPreferences = getSharedPreferences("ConnectSettings", Context.MODE_PRIVATE);
+    return sharedPreferences.getString("deviceNameServer", getString(R.string.main_device));
   }
 }

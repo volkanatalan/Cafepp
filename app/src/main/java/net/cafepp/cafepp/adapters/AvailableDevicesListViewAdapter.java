@@ -66,7 +66,6 @@ public class AvailableDevicesListViewAdapter extends BaseAdapter {
     
     viewHolder.deviceName.setText(device.getDeviceName());
     viewHolder.ip.setText(device.getIpAddress());
-    Log.d(TAG, "ip: " + device.getIpAddress());
       
     // Show the type of device (phone or tablet).
     if (device.isTablet())
@@ -79,7 +78,7 @@ public class AvailableDevicesListViewAdapter extends BaseAdapter {
   
   public void add(Device device) {
     devices.add(device);
-    Log.d(TAG, "Add service successful: " + device.getDeviceName());
+    Log.d(TAG, "Add available device: " + device.getDeviceName());
     notifyDataSetChanged();
   }
   
@@ -91,5 +90,24 @@ public class AvailableDevicesListViewAdapter extends BaseAdapter {
   public void setConnected(int pos) {
     devices.get(pos).setConnected(true);
     notifyDataSetChanged();
+  }
+  
+  public void remove(String macAddress) {
+    int pos = getPosition(macAddress);
+    if (pos > -1) {
+      devices.remove(pos);
+      notifyDataSetChanged();
+    }
+  }
+  
+  public int getPosition(String macAddress) {
+    if (devices.size() > 0) {
+      for (int i = 0; i < devices.size(); i++) {
+        if (devices.get(i).getMacAddress().equals(macAddress))
+          return i;
+      }
+    }
+    Log.e(TAG, "Unable to find a device with the MAC address " + macAddress);
+    return -1;
   }
 }

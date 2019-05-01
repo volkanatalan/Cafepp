@@ -4,16 +4,21 @@ import android.net.nsd.NsdServiceInfo;
 
 import java.io.Serializable;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class Device implements Serializable {
+  private int id;
   private String deviceName;
+  Socket socket;
   private String serviceType = "_cafepp._tcp.";
-  private int port;
+  private int port = 0;
   private String ipAddress;
   private String macAddress;
   private boolean isTablet;
   private int pairKey;
+  private boolean allowPairReq = false;
+  private boolean isFound = false;
   private boolean isConnected = false;
   
   public Device() {
@@ -35,6 +40,15 @@ public class Device implements Serializable {
     this.port = port;
   }
   
+  public int getId() {
+    return id;
+  }
+  
+  public Device setId(int id) {
+    this.id = id;
+    return this;
+  }
+  
   public String getDeviceName() {
     return deviceName;
   }
@@ -42,6 +56,14 @@ public class Device implements Serializable {
   public Device setDeviceName(String name) {
     deviceName = name;
     return this;
+  }
+  
+  public Socket getSocket() {
+    return socket;
+  }
+  
+  public void setSocket(Socket socket) {
+    this.socket = socket;
   }
   
   public String getServiceType() {
@@ -87,6 +109,22 @@ public class Device implements Serializable {
   public Device setPairKey(int pairKey) {
     this.pairKey = pairKey;
     return this;
+  }
+  
+  public boolean isAllowPairReq() {
+    return allowPairReq;
+  }
+  
+  public void setAllowPairReq(boolean allowPairReq) {
+    this.allowPairReq = allowPairReq;
+  }
+  
+  public boolean isFound() {
+    return isFound;
+  }
+  
+  public void setFound(boolean found) {
+    isFound = found;
   }
   
   public boolean isConnected() {

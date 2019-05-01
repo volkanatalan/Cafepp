@@ -277,11 +277,9 @@ public class NSDHelper {
         // If resolving is already active try again.
         if (errorCode == 3) {
           String deviceName = serviceInfo.getServiceName();
-          if (!resolveFailDevices.contains(deviceName)) {
-            Log.i(TAG, "Trying to resolve \"" + serviceName + "\" again.");
-            resolveFailDevices.add(deviceName);
-            nsdManager.resolveService(serviceInfo, this);
-          }
+          Log.i(TAG, "Trying to resolve \"" + serviceName + "\" again.");
+          resolveFailDevices.add(deviceName);
+          nsdManager.resolveService(serviceInfo, this);
         }
         
         // Call ResolveListener interface.

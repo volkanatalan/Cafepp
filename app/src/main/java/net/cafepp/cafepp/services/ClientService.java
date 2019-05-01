@@ -17,14 +17,17 @@ import android.util.Log;
 
 import net.cafepp.cafepp.R;
 import net.cafepp.cafepp.activities.ConnectActivity;
+import net.cafepp.cafepp.connection.ClientThread;
 import net.cafepp.cafepp.connection.Command;
 import net.cafepp.cafepp.connection.CommunicationThread;
 import net.cafepp.cafepp.connection.NSDHelper;
 import net.cafepp.cafepp.connection.Package;
+import net.cafepp.cafepp.databases.DeviceDatabase;
 import net.cafepp.cafepp.objects.Device;
-import net.cafepp.cafepp.objects.PairedDevice;
+import net.cafepp.cafepp.objects.PairDevice;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,10 +38,12 @@ public class ClientService extends Service {
   private Context context;
   private NSDHelper nsdHelper;
   private boolean isRestartingDiscovery = false;
-  private static Thread threadCommunication;
+  private static Thread threadCommunication, threadClient;
+  private ClientThread clientThread;
   private List<Device> foundDevices = new ArrayList<>();
-  private static List<PairedDevice> pairWaitingDevices = new ArrayList<>();
-  private List<Device> pairedDevices = new ArrayList<>();
+  private static List<PairDevice> pairWaitingDevices = new ArrayList<>();
+  private List<Device> pairedDevices;
+  private List<Device> connectedDevices = new ArrayList<>();
   
   
   public ClientService() {
@@ -70,7 +75,7 @@ public class ClientService extends Service {
                                     .setContentTitle(getString(R.string.cafépp_allcaps))
                                     .setTicker(getString(R.string.cafépp_allcaps))
                                     .setContentText(getString(R.string.client))
-                                    .setSmallIcon(R.drawable.wifi)
+                                    .setSmallIcon(R.drawable.wifi_connected)
                                     .setLargeIcon(Bitmap.createScaledBitmap(
                                         icon, 128, 128, false))
                                     .setContentIntent(pendingIntent)
@@ -88,51 +93,55 @@ public class ClientService extends Service {
     setDiscoveryListener();
     setResolveListener();
     nsdHelper.startDiscovery();
+    
+    DeviceDatabase deviceDatabase = new DeviceDatabase(this);
+    pairedDevices = deviceDatabase.getDevicesAsClient();
   }
   
   @Override
   public void onDestroy() {
     Log.d(TAG, "In onDestroy");
     nsdHelper.stopDiscovery();
+    
     if (threadCommunication != null && !threadCommunication.isInterrupted())
       threadCommunication.interrupt();
+    
     LocalBroadcastManager.getInstance(context).unregisterReceiver(mMessageReceiver);
     super.onDestroy();
   }
   
-  private void sendPackageToServer(Package aPackage, CommunicationThread.OnOutputListener listener) {
-    Command command = aPackage.getCommand();
-    Device myDevice = aPackage.getSendingDevice();
-    Device targetDevice = aPackage.getTargetDevice();
-    
-    CommunicationThread communicationThread = new CommunicationThread(command);
-    communicationThread.setMyDevice(myDevice);
-    communicationThread.setTargetDevice(targetDevice);
-    communicationThread.setOnOutputListener(listener);
-    communicationThread.setOnInputListener(aPackage1 -> resolvePackage(aPackage));
-    threadCommunication = new Thread(communicationThread);
-    threadCommunication.start();
-  }
-  
-  private PairedDevice.OnPairedListener onPairedListener = (isBothConfirmed, device) -> {
-    if (isBothConfirmed) {
-      Package aPackage = new Package(Command.PAIRED, null, device);
-      sendMessageToActivity(aPackage);
-    }
-  };
-  
   private void addFoundDevice(Device device) {
-    for (Device d : foundDevices)
-      if (d.getMacAddress().equals(device.getMacAddress())) {
-        Log.e(TAG, "Attempt to add a device with the same MAC address.");
-        return;
-      }
+    // If found device is paired before, set it as found in pairesDevices list.
+    if (pairedDevices.size() > 0) {
+      for (int i = 0; i < pairedDevices.size(); i++) {
+        if (pairedDevices.get(i).getMacAddress().equals(device.getMacAddress())) {
+          Log.d(TAG, "A paired device found: " + pairedDevices.get(i).getDeviceName());
+          pairedDevices.get(i).setFound(true);
   
+          Package aPackage = new Package(Command.FOUND, null, device);
+          sendMessageToActivity(aPackage);
+          return;
+        }
+      }
+    }
+    
+    // If found device is not paired before and there is a device with
+    // the same MAC address in foundDevices list, don't add it to any list.
+    if (foundDevices.size() > 0) {
+      for (Device d : foundDevices) {
+        if (d.getMacAddress().equals(device.getMacAddress())) {
+          Log.e(TAG, "Attempt to add a device with the same MAC address.");
+          return;
+        }
+      }
+    }
+  
+    // If found device is not paired before and there is not a device with
+    // the same MAC address in foundDevices list, add it  to foundDevices list.
     foundDevices.add(device);
-    Log.i(TAG, "Add successful!");
+    Log.i(TAG, "Found device: " + device.getDeviceName());
   
     Package aPackage = new Package(Command.FOUND, null, device);
-  
     sendMessageToActivity(aPackage);
   }
   
@@ -172,38 +181,212 @@ public class ClientService extends Service {
   
   private void resolvePackage(Package pkg) {
     Command command = pkg.getCommand();
+    Device sendingDevice = pkg.getSendingDevice();
+    Device receivingDevice = pkg.getReceivingDevice();
+    int position;
+    
     switch (command) {
       case PAIR_REQ:
-        sendPackageToServer(pkg, aPackage -> {
-          pkg.setCommand(Command.LISTEN);
-          sendPackageToServer(pkg, null);
-        });
+        Log.d(TAG, "PAIR_REQ");
+        pkg.setCommand(Command.PAIR_REQ);
+        communicateWithServer(pkg);
         
-        PairedDevice pairedDevice = new PairedDevice(pkg.getTargetDevice());
-        pairedDevice.setOnPairedListener(onPairedListener);
-        pairWaitingDevices.add(pairedDevice);
+        PairDevice pairDevice = new PairDevice(receivingDevice);
+        pairDevice.setOnPairedListener(onPairedListener);
+        pairWaitingDevices.add(pairDevice);
         break;
-      
+        
       case PAIR_SERVER_ACCEPT:
-        Log.d(TAG, "Server accepted to pair.");
+        Log.d(TAG, "PAIR_SERVER_ACCEPT");
+        position = getPWDListPositionByMac(sendingDevice.getMacAddress());
+        if (position != -1) pairWaitingDevices.get(position).setServerPaired(true);
         break;
-      
-      case PAIR_SERVER_DENY:
-        Log.d(TAG, "Server denied to pair.");
+        
+      case PAIR_SERVER_DECLINE:
+        Log.d(TAG, "PAIR_SERVER_DECLINE");
+        position = getPWDListPositionByMac(sendingDevice.getMacAddress());
+        if (position != -1) {
+          // Remove the device from list.
+          pairWaitingDevices.remove(position);
+          
+          // Inform ConnectActivity that server declined to pair.
+          sendMessageToActivity(pkg);
+        }
         break;
-      
+        
       case PAIR_CLIENT_ACCEPT:
-        Log.d(TAG, "Client accepted to pair.");
+        Log.d(TAG, "PAIR_CLIENT_ACCEPT");
+        position = getPWDListPositionByMac(receivingDevice.getMacAddress());
+        if (position != -1) {
+          pairWaitingDevices.get(position).setClientPaired(true);
+          communicateWithServer(pkg);
+        }
         break;
-      
-      case PAIR_CLIENT_DENY:
-        Log.d(TAG, "Client denied to pair.");
+        
+      case PAIR_CLIENT_DECLINE:
+        Log.d(TAG, "PAIR_CLIENT_DECLINE");
+        position = getPWDListPositionByMac(receivingDevice.getMacAddress());
+        if (position != -1) {
+          // Remove the device from list.
+          pairWaitingDevices.remove(position);
+          communicateWithServer(pkg);
+        }
+        break;
+        
+      case CONNECT:
+        Log.d(TAG, "CONNECT");
+        connectedDevices.add(receivingDevice);
+        listenToServer(pkg);
+        communicateWithServer(pkg);
+        break;
+        
+      case DISCONNECT_SERVER:
+        Log.d(TAG, "DISCONNECT_SERVER");
+        position = getCDListPositionByMac(sendingDevice.getMacAddress());
+        if (position != -1) {
+          // Remove the device from list.
+          connectedDevices.remove(position);
+          stopListeningToServer();
+          sendMessageToActivity(pkg);
+        }
+        break;
+        
+      case DISCONNECT_CLIENT:
+        Log.d(TAG, "DISCONNECT_CLIENT");
+        position = getCDListPositionByMac(receivingDevice.getMacAddress());
+        if (position != -1) {
+          // Remove the device from list.
+          connectedDevices.remove(position);
+          stopListeningToServer();
+          communicateWithServer(pkg);
+        }
+        break;
+        
+      case UNPAIR_SERVER:
+        Log.d(TAG, "UNPAIR_SERVER");
+        position = getCDListPositionByMac(sendingDevice.getMacAddress());
+        if (position != -1) {
+          // Remove the device from list.
+          connectedDevices.remove(position);
+        }
+        position = getPDListPositionByMac(sendingDevice.getMacAddress());
+        if (position != -1) {
+          // Remove the device from list.
+          pairedDevices.remove(position);
+        }
+        stopListeningToServer();
+        sendMessageToActivity(pkg);
+        break;
+        
+      case UNPAIR_CLIENT:
+        Log.d(TAG, "UNPAIR_CLIENT");
+        position = getCDListPositionByMac(receivingDevice.getMacAddress());
+        if (position != -1) {
+          // Remove the device from list.
+          connectedDevices.remove(position);
+        }
+        position = getPDListPositionByMac(receivingDevice.getMacAddress());
+        if (position != -1) {
+          // Remove the device from list.
+          pairedDevices.remove(position);
+        }
+        stopListeningToServer();
+        communicateWithServer(pkg);
         break;
     }
   }
   
+  private PairDevice.OnPairedListener onPairedListener = (isBothPaired, device) -> {
+    if (isBothPaired) {
+      Log.d(TAG, "Device is paired: " + device.getDeviceName());
+  
+      DeviceDatabase deviceDatabase = new DeviceDatabase(this);
+      deviceDatabase.addAsClient(device.getDevice());
+      
+      Package aPackage = new Package(Command.PAIRED, null, device);
+      sendMessageToActivity(aPackage);
+    }
+  };
+  
+  private int getPWDListPositionByMac(String macAddress) {
+    if (pairWaitingDevices.size() > 0) {
+      for (int i = 0; i < pairWaitingDevices.size(); i++) {
+        String mac = pairWaitingDevices.get(i).getMacAddress();
+        if (mac.equals(macAddress)) {
+          return i;
+          
+        } else {
+          Log.e(TAG, "There is not any device with the same MAC address in pairWaitingDevices list.");
+        }
+      }
+    } else {
+      Log.e(TAG, "pairWaitingDevices list is empty.");
+    }
+    return -1;
+  }
+  
+  private int getPDListPositionByMac(String macAddress) {
+    if (pairedDevices.size() > 0) {
+      for (int i = 0; i < pairedDevices.size(); i++) {
+        String mac = pairedDevices.get(i).getMacAddress();
+        if (mac.equals(macAddress)) {
+          return i;
+          
+        } else {
+          Log.e(TAG, "There is not any device with the same MAC address in pairedDevices list.");
+        }
+      }
+    } else {
+      Log.e(TAG, "pairedDevices list is empty.");
+    }
+    return -1;
+  }
+  
+  private int getCDListPositionByMac(String macAddress) {
+    if (connectedDevices.size() > 0) {
+      for (int i = 0; i < connectedDevices.size(); i++) {
+        String mac = connectedDevices.get(i).getMacAddress();
+        if (mac.equals(macAddress)) {
+          return i;
+          
+        } else {
+          Log.e(TAG, "There is not any device with the same MAC address in connectedDevices list.");
+        }
+      }
+    } else {
+      Log.e(TAG, "connectedDevices list is empty.");
+    }
+    return -1;
+  }
+  
+  private void communicateWithServer(Package aPackage) {
+    CommunicationThread communicationThread = new CommunicationThread(aPackage);
+    communicationThread.setOnInputListener(this::resolvePackage);
+    threadCommunication = new Thread(communicationThread);
+    threadCommunication.start();
+  }
+  
+  private void listenToServer(Package aPackage) {
+    clientThread = new ClientThread(aPackage);
+    clientThread.setOnPackageInputListener(this::resolvePackage);
+    threadClient = new Thread(clientThread);
+    threadClient.setDaemon(true);
+    threadClient.start();
+  }
+  
+  private void stopListeningToServer() {
+    Socket socket = clientThread.getSocket();
+    if (socket != null && !socket.isClosed()) {
+      try {
+        socket.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+  
   private void sendMessageToActivity(Package aPackage) {
-    Log.i(TAG, "Message sending to activity");
+    Log.i(TAG, "Message sending to activity.");
     Intent intent = new Intent("ConnectActivity");
     intent.putExtra("Message", aPackage);
     LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
@@ -224,6 +407,9 @@ public class ClientService extends Service {
       @Override
       public void onServiceLost(NsdServiceInfo service) {
         Log.d(TAG, "Lost service: " + service.getServiceName());
+        // Inform activity that a device is lost.
+        sendMessageToActivity(new Package(Command.LOST, null, new Device(service.getServiceName())));
+        // Restart discovery.
         if (!isRestartingDiscovery) restartDiscovery();
       }
       
@@ -263,11 +449,15 @@ public class ClientService extends Service {
         Log.d(TAG, "In onResolved");
         
         try {
-          socket = new Socket(serviceInfo.getHost(), serviceInfo.getPort());
+          socket = new Socket();
+          socket.connect(new InetSocketAddress(serviceInfo.getHost(), serviceInfo.getPort()));
           
-          CommunicationThread communicationThread = new CommunicationThread(socket, Command.INFO_REQ);
-          communicationThread.setOnInputListener(
-              aPackage -> addFoundDevice(aPackage.getSendingDevice()));
+          CommunicationThread communicationThread =
+              new CommunicationThread(socket, Command.INFO_REQ, null);
+          communicationThread.setOnInputListener(aPackage -> {
+                addFoundDevice(aPackage.getSendingDevice());
+                sendNotPairedMessage(aPackage);
+          });
           
           threadCommunication = new Thread(communicationThread);
           threadCommunication.start();
@@ -283,6 +473,20 @@ public class ClientService extends Service {
       public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode) {
       }
     });
+  }
+  
+  private void sendNotPairedMessage(Package aPackage) {
+    if (pairedDevices.size() > 0) {
+      for (Device device : pairedDevices){
+        if (aPackage.getSendingDevice().getMacAddress().equals(device.getMacAddress()))
+          return;
+      }
+      
+      Package sendingPackage = new Package(
+          Command.NOT_PAIRED, aPackage.getReceivingDevice(), aPackage.getSendingDevice());
+      communicateWithServer(sendingPackage);
+      Log.d(TAG, "NOT_PAIRED command sent.");
+    }
   }
   
   @Override

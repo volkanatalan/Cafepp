@@ -14,16 +14,17 @@ import java.util.List;
 
 public class DevicesListViewAdapter extends BaseAdapter {
   private List<Device> devices;
-  private boolean showIP = false;
   
   private static class ViewHolder{
     private TextView deviceName, ip;
     private ImageView connectImage;
   }
   
-  public DevicesListViewAdapter(List<Device> devices, boolean showIP) {
+  public DevicesListViewAdapter() {
+  }
+  
+  public DevicesListViewAdapter(List<Device> devices) {
     this.devices = devices;
-    this.showIP = showIP;
   }
   
   @Override
@@ -65,13 +66,8 @@ public class DevicesListViewAdapter extends BaseAdapter {
     Device device = devices.get(position);
     viewHolder.deviceName.setText(device.getDeviceName());
     
-    if (device.isConnected()) viewHolder.connectImage.setImageResource(R.drawable.wifi);
+    if (device.isConnected()) viewHolder.connectImage.setImageResource(R.drawable.wifi_connected);
     else viewHolder.connectImage.setImageResource(R.drawable.wifi_disconnected);
-  
-    if (showIP) {
-      viewHolder.ip.setText(device.getIpAddress());
-      viewHolder.ip.setVisibility(View.VISIBLE);
-    } else viewHolder.ip.setVisibility(View.GONE);
     
     return convertView;
   }

@@ -13,7 +13,6 @@ public class Package implements Serializable {
   private Command command;
   private Device sendingDevice;
   private Device receivingDevice;
-  private Socket socket;
   
   public Package() {
   }
@@ -22,13 +21,6 @@ public class Package implements Serializable {
     this.command = command;
     this.sendingDevice = sendingDevice;
     this.receivingDevice = receivingDevice;
-  }
-  
-  public Package(Command command, Device sendingDevice, Device receivingDevice, Socket socket) {
-    this.command = command;
-    this.sendingDevice = sendingDevice;
-    this.receivingDevice = receivingDevice;
-    this.socket = socket;
   }
   
   public Command getCommand() {
@@ -56,13 +48,5 @@ public class Package implements Serializable {
   public Package setReceivingDevice(Device receivingDevice) {
     this.receivingDevice = receivingDevice;
     return this;
-  }
-  
-  public Socket getSocket() {
-    return socket;
-  }
-  
-  public void setSocket(Socket socket) {
-    this.socket = socket;
   }
 }

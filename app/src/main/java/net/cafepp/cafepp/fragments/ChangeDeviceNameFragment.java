@@ -1,7 +1,5 @@
 package net.cafepp.cafepp.fragments;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -14,23 +12,26 @@ import android.widget.TextView;
 import net.cafepp.cafepp.R;
 import net.cafepp.cafepp.activities.ConnectActivity;
 
-public class ConnectSettingsDeviceNameFragment extends Fragment {
+public class ChangeDeviceNameFragment extends Fragment {
   
   private EditText deviceNameEditText;
   private TextView cancelTextView, confirmTextView;
   private String deviceName;
   
-  public ConnectSettingsDeviceNameFragment() {
+  public ChangeDeviceNameFragment() {
     // Required empty public constructor
+  }
+  
+  public static ChangeDeviceNameFragment newInstance(String deviceName, OnButtonClickListener listener) {
+    ChangeDeviceNameFragment fragment = new ChangeDeviceNameFragment();
+    fragment.setDeviceName(deviceName);
+    fragment.setOnButtonClickListener(listener);
+    return fragment;
   }
   
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-  
-    SharedPreferences sharedPreferences = getActivity().getSharedPreferences(
-        "ConnectSettings", Context.MODE_PRIVATE);
-    deviceName = sharedPreferences.getString("deviceName", "Cafepp Device");
   }
   
   @Override
@@ -51,19 +52,26 @@ public class ConnectSettingsDeviceNameFragment extends Fragment {
     
     confirmTextView.setOnClickListener(v -> {
       deviceName = deviceNameEditText.getText().toString();
-      SharedPreferences.Editor editor = getActivity().getSharedPreferences(
-          "ConnectSettings", Context.MODE_PRIVATE).edit();
-      editor.putString("deviceName", deviceName);
-      editor.apply();
-      
-      ((ConnectActivity) getActivity()).deviceNameTextView.setText(deviceName);
-      ((ConnectActivity) getActivity()).interlayer.setVisibility(View.GONE);
-      getActivity().onBackPressed();
+      if (onButtonClickListener != null) onButtonClickListener.onClickConfirm(deviceName);
     });
     
     cancelTextView.setOnClickListener(v -> {
-      ((ConnectActivity) getActivity()).interlayer.setVisibility(View.GONE);
-      getActivity().onBackPressed();
+      if (onButtonClickListener != null) onButtonClickListener.onClickCancel();
     });
+  }
+  
+  public void setDeviceName(String name) {
+    deviceName = name;
+  }
+  
+  private OnButtonClickListener onButtonClickListener;
+  
+  public interface OnButtonClickListener {
+    void onClickCancel();
+    void onClickConfirm(String deviceName);
+  }
+  
+  public void setOnButtonClickListener(OnButtonClickListener listener) {
+    onButtonClickListener = listener;
   }
 }
