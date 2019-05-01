@@ -1,16 +1,17 @@
 package net.cafepp.cafepp.objects;
 
-public class PairedDevice extends Device {
+public class PairDevice extends Device {
   private boolean isServerPaired;
   private boolean isClientPaired;
   
-  public PairedDevice(Device device) {
+  public PairDevice(Device device) {
     setDevice(device);
   }
   
   public Device getDevice() {
     Device device = new Device();
     device.setDeviceName(getDeviceName());
+    device.setSocket(getSocket());
     device.setConnected(isConnected());
     device.setIpAddress(getIpAddress());
     device.setPort(getPort());
@@ -21,8 +22,9 @@ public class PairedDevice extends Device {
     return device;
   }
   
-  public PairedDevice setDevice(Device device) {
+  public PairDevice setDevice(Device device) {
     setDeviceName(device.getDeviceName());
+    setSocket(device.getSocket());
     setConnected(device.isConnected());
     setIpAddress(device.getIpAddress());
     setPort(device.getPort());
@@ -37,9 +39,11 @@ public class PairedDevice extends Device {
     return isServerPaired;
   }
   
-  public PairedDevice setServerPaired(boolean serverPaired) {
+  public PairDevice setServerPaired(boolean serverPaired) {
     isServerPaired = serverPaired;
-    if (onPairedListener != null) onPairedListener.onPaired(isPaired(), this);
+    if (onPairedListener != null && serverPaired) {
+      onPairedListener.onPaired(isBothPaired(), this);
+    }
     return this;
   }
   
@@ -47,23 +51,25 @@ public class PairedDevice extends Device {
     return isClientPaired;
   }
   
-  public PairedDevice setClientPaired(boolean clientPaired) {
+  public PairDevice setClientPaired(boolean clientPaired) {
     isClientPaired = clientPaired;
-    if (onPairedListener != null) onPairedListener.onPaired(isPaired(), this);
+    if (onPairedListener != null && clientPaired) {
+      onPairedListener.onPaired(isBothPaired(), this);
+    }
     return this;
   }
   
-  private boolean isPaired() {
+  private boolean isBothPaired() {
     return isServerPaired && isClientPaired;
   }
   
   private OnPairedListener onPairedListener;
   
   public interface OnPairedListener {
-    void onPaired(boolean isBothConfirmed, PairedDevice device);
+    void onPaired(boolean isBothConfirmed, PairDevice device);
   }
   
-  public PairedDevice setOnPairedListener(OnPairedListener listener) {
+  public PairDevice setOnPairedListener(OnPairedListener listener) {
     onPairedListener = listener;
     return this;
   }
