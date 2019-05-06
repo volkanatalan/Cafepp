@@ -330,7 +330,7 @@ public class ServerService extends Service {
       
       // Add device to database.
       DeviceDatabase deviceDatabase = new DeviceDatabase(this);
-      deviceDatabase.addAsServer(device.getDevice());
+      deviceDatabase.addAsServer(device);
   
       // Inform Devices Activity that there is a paired device.
       Package aPackage = new Package(Command.PAIRED, null, device);

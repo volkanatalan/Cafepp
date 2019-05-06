@@ -110,41 +110,6 @@ public class ClientService extends Service {
     super.onDestroy();
   }
   
-  private void addFoundDevice(Device device) {
-    // If found device is paired before, set it as found in pairesDevices list.
-    if (pairedDevices.size() > 0) {
-      for (int i = 0; i < pairedDevices.size(); i++) {
-        if (pairedDevices.get(i).getMacAddress().equals(device.getMacAddress())) {
-          Log.d(TAG, "A paired device found: " + pairedDevices.get(i).getDeviceName());
-          pairedDevices.get(i).setFound(true);
-  
-          Package aPackage = new Package(Command.FOUND, null, device);
-          sendMessageToActivity(aPackage);
-          return;
-        }
-      }
-    }
-    
-    // If found device is not paired before and there is a device with
-    // the same MAC address in foundDevices list, don't add it to any list.
-    if (foundDevices.size() > 0) {
-      for (Device d : foundDevices) {
-        if (d.getMacAddress().equals(device.getMacAddress())) {
-          Log.e(TAG, "Attempt to add a device with the same MAC address.");
-          return;
-        }
-      }
-    }
-  
-    // If found device is not paired before and there is not a device with
-    // the same MAC address in foundDevices list, add it  to foundDevices list.
-    foundDevices.add(device);
-    Log.i(TAG, "Found device: " + device.getDeviceName());
-  
-    Package aPackage = new Package(Command.FOUND, null, device);
-    sendMessageToActivity(aPackage);
-  }
-  
   private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -292,6 +257,7 @@ public class ClientService extends Service {
         }
         stopListeningToServer();
         communicateWithServer(pkg);
+        restartDiscovery();
         break;
     }
   }
@@ -300,8 +266,13 @@ public class ClientService extends Service {
     if (isBothPaired) {
       Log.d(TAG, "Device is paired: " + device.getDeviceName());
   
+      int pos = getPWDListPositionByMac(device.getMacAddress());
+      if (pos > -1) {
+        pairWaitingDevices.remove(pos);
+      }
+  
       DeviceDatabase deviceDatabase = new DeviceDatabase(this);
-      deviceDatabase.addAsClient(device.getDevice());
+      deviceDatabase.addAsClient(device);
       
       Package aPackage = new Package(Command.PAIRED, null, device);
       sendMessageToActivity(aPackage);
@@ -320,7 +291,7 @@ public class ClientService extends Service {
         }
       }
     } else {
-      Log.e(TAG, "pairWaitingDevices list is empty.");
+      Log.d(TAG, "pairWaitingDevices list is empty.");
     }
     return -1;
   }
@@ -375,14 +346,7 @@ public class ClientService extends Service {
   }
   
   private void stopListeningToServer() {
-    Socket socket = clientThread.getSocket();
-    if (socket != null && !socket.isClosed()) {
-      try {
-        socket.close();
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-    }
+    if (clientThread != null) clientThread.closeSocket();
   }
   
   private void sendMessageToActivity(Package aPackage) {
@@ -475,6 +439,42 @@ public class ClientService extends Service {
     });
   }
   
+  private void addFoundDevice(Device device) {
+    // If found device is paired before, set it as found in pairedDevices list.
+    if (pairedDevices.size() > 0) {
+      for (int i = 0; i < pairedDevices.size(); i++) {
+        if (pairedDevices.get(i).getMacAddress().equals(device.getMacAddress())) {
+          Log.d(TAG, "A paired device found: " + pairedDevices.get(i).getDeviceName());
+          device.setFound(true);
+          pairedDevices.set(i, device);
+          
+          Package aPackage = new Package(Command.FOUND, null, device);
+          sendMessageToActivity(aPackage);
+          return;
+        }
+      }
+    }
+    
+    // If found device is not paired before and there is a device with
+    // the same MAC address in foundDevices list, don't add it to any list.
+    if (foundDevices.size() > 0) {
+      for (Device d : foundDevices) {
+        if (d.getMacAddress().equals(device.getMacAddress())) {
+          Log.e(TAG, "Attempt to add a device with the same MAC address.");
+          return;
+        }
+      }
+    }
+    
+    // If found device is not paired before and there is not a device with
+    // the same MAC address in foundDevices list, add it  to foundDevices list.
+    foundDevices.add(device);
+    Log.i(TAG, "Found device: " + device.getDeviceName());
+    
+    Package aPackage = new Package(Command.FOUND, null, device);
+    sendMessageToActivity(aPackage);
+  }
+  
   private void sendNotPairedMessage(Package aPackage) {
     if (pairedDevices.size() > 0) {
       for (Device device : pairedDevices){
@@ -485,7 +485,7 @@ public class ClientService extends Service {
       Package sendingPackage = new Package(
           Command.NOT_PAIRED, aPackage.getReceivingDevice(), aPackage.getSendingDevice());
       communicateWithServer(sendingPackage);
-      Log.d(TAG, "NOT_PAIRED command sent.");
+      Log.d(TAG, "NOT_PAIRED command sent: " + aPackage.getReceivingDevice().getDeviceName());
     }
   }
   

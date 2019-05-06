@@ -11,8 +11,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import net.cafepp.cafepp.R;
-import net.cafepp.cafepp.activities.ConnectActivity;
-import net.cafepp.cafepp.activities.DevicesActivity;
 import net.cafepp.cafepp.connection.Command;
 import net.cafepp.cafepp.connection.Package;
 import net.cafepp.cafepp.objects.Device;
@@ -20,7 +18,7 @@ import net.cafepp.cafepp.objects.Device;
 public class PairFragment extends Fragment {
   private final String TAG = "PairFragment";
   private static final String PACKAGE = "package";
-  private Package aPackage;
+  private Package mPackage;
   private Device targetDevice;
   private int pairKey;
   private String declineButtonText = "";
@@ -43,12 +41,12 @@ public class PairFragment extends Fragment {
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     if (getArguments() != null) {
-      aPackage = (Package) getArguments().getSerializable(PACKAGE);
+      mPackage = (Package) getArguments().getSerializable(PACKAGE);
       
-      if (aPackage != null) {
-        Command command = aPackage.getCommand();
-        Device myDevice = aPackage.getSendingDevice();
-        targetDevice = aPackage.getReceivingDevice();
+      if (mPackage != null) {
+        Command command = mPackage.getCommand();
+        Device myDevice = mPackage.getSendingDevice();
+        targetDevice = mPackage.getReceivingDevice();
   
         switch (command) {
           case PAIR_REQ:
@@ -75,41 +73,23 @@ public class PairFragment extends Fragment {
     View view = inflater.inflate(R.layout.fragment_pair, container, false);
     TextView deviceNameTextView = view.findViewById(R.id.deviceNameTextView);
     TextView pairKeyTextView = view.findViewById(R.id.pairKeyTextView);
+    TextView confirmButton = view.findViewById(R.id.confirm);
     TextView declineButton = view.findViewById(R.id.decline);
     
     deviceNameTextView.setText(targetDevice.getDeviceName());
     pairKeyTextView.setText(pairKey +"");
     declineButton.setText(declineButtonText);
     
-    onClickDeclineButton(view);
-    onClickConfirmButton(view);
-    return view;
-  }
-  
-  @Override
-  public void onDetach() {
-    super.onDetach();
-    if (getActivity() != null)
-      if (getActivity() instanceof ConnectActivity)
-        ((ConnectActivity)getActivity()).interlayer.setVisibility(View.GONE);
-      else if (getActivity() instanceof DevicesActivity)
-        ((DevicesActivity)getActivity()).interlayer.setVisibility(View.GONE);
-  }
-  
-  private void onClickDeclineButton(View view) {
-    Log.d(TAG, "Clicked on " + declineButtonText + " button.");
-    TextView declineButton = view.findViewById(R.id.decline);
-    declineButton.setOnClickListener(v -> {
-      if (onButtonClickListener != null) onButtonClickListener.onClickDecline(aPackage);
-    });
-  }
-  
-  private void onClickConfirmButton(View view) {
-    Log.d(TAG, "Clicked on Confirm button.");
-    TextView confirmButton = view.findViewById(R.id.confirm);
     confirmButton.setOnClickListener(v -> {
-      if (onButtonClickListener != null) onButtonClickListener.onClickPair(aPackage);
+      Log.d(TAG, "Clicked on Confirm button.");
+      if (onButtonClickListener != null) onButtonClickListener.onClickPair(mPackage);
     });
+  
+    declineButton.setOnClickListener(v -> {
+      Log.d(TAG, "Clicked on " + declineButtonText + " button.");
+      if (onButtonClickListener != null) onButtonClickListener.onClickDecline(mPackage);
+    });
+    return view;
   }
   
   private OnButtonClickListener onButtonClickListener;
@@ -124,6 +104,6 @@ public class PairFragment extends Fragment {
   }
   
   public Package getPackage() {
-    return aPackage;
+    return mPackage;
   }
 }

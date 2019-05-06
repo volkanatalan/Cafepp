@@ -77,21 +77,25 @@ public class HomeActivity extends AppCompatActivity
   public boolean onNavigationItemSelected(@NonNull MenuItem item) {
     // Handle navigation view item clicks here.
     int id = item.getItemId();
+  
+    if (id == R.id.nav_home) {
     
-    if (id == R.id.nav_devices) {
+    }
+    else if (id == R.id.nav_tables) {
+  
+    }
+    else if (id == R.id.nav_stock) {
+  
+    }
+    else if (id == R.id.nav_statistics) {
+  
+    }
+    else if (id == R.id.nav_devices) {
       Intent intent = new Intent(this, DevicesActivity.class);
       startActivity(intent);
-    
-    } else if (id == R.id.nav_gallery) {
-    
-    } else if (id == R.id.nav_slideshow) {
-    
-    } else if (id == R.id.nav_manage) {
-    
-    } else if (id == R.id.nav_share) {
-    
-    } else if (id == R.id.nav_send) {
-    
+    }
+    else if (id == R.id.nav_settings) {
+  
     }
     
     DrawerLayout drawer = findViewById(R.id.drawer_layout);

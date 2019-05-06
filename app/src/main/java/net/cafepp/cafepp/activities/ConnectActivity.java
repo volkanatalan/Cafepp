@@ -224,16 +224,20 @@ public class ConnectActivity extends AppCompatActivity {
       new PairFragment.OnButtonClickListener() {
     @Override
     public void onClickPair(Package aPackage) {
-      getSupportFragmentManager().popBackStack();
       aPackage.setCommand(Command.PAIR_CLIENT_ACCEPT);
       sendPackageToClientService(aPackage);
+      
+      getSupportFragmentManager().popBackStack();
+      interlayer.setVisibility(View.GONE);
     }
   
     @Override
     public void onClickDecline(Package aPackage) {
-      getSupportFragmentManager().popBackStack();
       aPackage.setCommand(Command.PAIR_CLIENT_DECLINE);
       sendPackageToClientService(aPackage);
+      
+      getSupportFragmentManager().popBackStack();
+      interlayer.setVisibility(View.GONE);
     }
   };
   
@@ -289,13 +293,14 @@ public class ConnectActivity extends AppCompatActivity {
   private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
     @Override
     public void onReceive(Context context, Intent intent) {
-      Log.d(TAG, "Received message.");
+      Log.d(TAG, "Message received.");
       Package aPackage = (Package) intent.getSerializableExtra("Message");
   
       if (aPackage != null) {
         Command command = aPackage.getCommand();
         Device sendingDevice = aPackage.getSendingDevice();
         Device receivingDevice = aPackage.getReceivingDevice();
+        Log.d(TAG, "Command: " + command);
   
         switch (command) {
           case FOUND:
@@ -305,24 +310,27 @@ public class ConnectActivity extends AppCompatActivity {
             // paired devices list and the device allows to pair, add the
             // found device to available devices.
             if (pos < 0) {
-              if (receivingDevice.isAllowPairReq())
+              if (receivingDevice.isAllowPairReq()) {
                 availableDevicesAdapter.add(receivingDevice);
+                Log.d(TAG, "Device added to availableDevices list: " + receivingDevice.getDeviceName());
+              }
             }
             
             else {
               // If there is a device with the same MAC address in the paired
               // devices list and its name is also the same, set it as found.
               boolean hasSameName = pairedDevices.get(pos).getDeviceName().equals(receivingDevice.getDeviceName());
-              if (hasSameName)
-                pairedDevicesAdapter.setFoundByMac(receivingDevice, true);
+              if (hasSameName) {
+                pairedDevicesAdapter.setFound(receivingDevice, true);
+                Log.d(TAG, "Device added to pairedDevices list: " + receivingDevice.getDeviceName());
+              }
               
               else {
                 // If there is a device with the same MAC address in the paired
                 // devices list but its name is different, change the name.
                 receivingDevice.setId(pairedDevices.get(pos).getId());
                 deviceDatabase.updateAsClient(receivingDevice);
-                pairedDevicesAdapter.setPairedDevices(deviceDatabase.getDevicesAsServer());
-                pairedDevicesAdapter.setFoundByMac(receivingDevice, true);
+                pairedDevicesAdapter.setFound(receivingDevice, true);
               }
             }
             break;

@@ -82,4 +82,14 @@ public class ClientThread implements Runnable {
   public Socket getSocket() {
     return mSocket;
   }
+  
+  public void closeSocket() {
+    if (mSocket != null && !mSocket.isClosed()) {
+      try {
+        mSocket.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+  }
 }

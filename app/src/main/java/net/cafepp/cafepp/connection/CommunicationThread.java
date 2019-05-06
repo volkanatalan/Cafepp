@@ -14,34 +14,42 @@ import java.net.UnknownHostException;
 public class CommunicationThread implements Runnable {
   
   private static final String TAG = "CommunicationThread";
-  private Socket socket;
-  private Command command;
-  private Device sendingDevice;
-  private Device receivingDevice;
+  private Socket mSocket;
+  private Command mCommand;
+  private Device mSendingDevice;
+  private Device mReceivingDevice;
   
   public CommunicationThread(Package aPackage) {
-    command = aPackage.getCommand();
-    sendingDevice = aPackage.getSendingDevice();
-    receivingDevice = aPackage.getReceivingDevice();
+    mCommand = aPackage.getCommand();
+    mSendingDevice = aPackage.getSendingDevice();
+    mReceivingDevice = aPackage.getReceivingDevice();
+    
+    Socket socket = mReceivingDevice.getSocket();
+    if (socket != null && !socket.isClosed()) {
+      mSocket = socket;
+    }
   }
   
   public CommunicationThread(Socket socket, Command command, Device sendingDevice) {
-    this.socket = socket;
-    this.command = command;
-    this.sendingDevice = sendingDevice;
+    mSocket = socket;
+    mCommand = command;
+    mSendingDevice = sendingDevice;
   }
   
   @Override
   public void run() {
-    Log.d(TAG, "In run. Command: " + command);
+    Log.d(TAG, "In run. Command: " + mCommand);
   
-    if (receivingDevice != null && socket == null) {
-      Log.d(TAG, "Socket is null, creating...");
+    if (mSendingDevice != null) mSendingDevice.setSocket(null);
+    if (mReceivingDevice != null) mReceivingDevice.setSocket(null);
+  
+    if (mReceivingDevice != null && mSocket == null) {
+      Log.d(TAG, "Socket creating...");
       try {
         // If the socket is null, initialize it.
-        InetAddress ip = InetAddress.getByName(receivingDevice.getIpAddress());
-        int port = receivingDevice.getPort();
-        socket = new Socket(ip, port);
+        InetAddress ip = InetAddress.getByName(mReceivingDevice.getIpAddress());
+        int port = mReceivingDevice.getPort();
+        mSocket = new Socket(ip, port);
         
       } catch (UnknownHostException e) {
         e.printStackTrace();
@@ -50,28 +58,28 @@ public class CommunicationThread implements Runnable {
       }
     }
     
-    if (socket != null) {
-      Log.d(TAG, "IP: " + socket.getInetAddress().getHostAddress());
-      Log.d(TAG, "Port: " + socket.getPort());
-      if (receivingDevice != null)
-        Log.d(TAG, "Receiving device port: " + receivingDevice.getPort());
+    if (mSocket != null) {
+      Log.d(TAG, "IP: " + mSocket.getInetAddress().getHostAddress());
+      Log.d(TAG, "Port: " + mSocket.getPort());
+      if (mReceivingDevice != null)
+        Log.d(TAG, "Receiving device port: " + mReceivingDevice.getPort());
     }
     
     while (!Thread.currentThread().isInterrupted()) {
       Log.d(TAG, "In while");
       Package aPackage;
   
-      switch (command) {
+      switch (mCommand) {
         case LISTEN:
           Log.d(TAG, "In LISTEN");
           try {
             // Listen for the inputs.
-            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+            ObjectInputStream in = new ObjectInputStream(mSocket.getInputStream());
             Object input = in.readObject();
             
             if (input != null) {
               Log.d(TAG, "There is an input!");
-              Log.d(TAG, "Port: " + socket.getPort());
+              Log.d(TAG, "Port: " + mSocket.getPort());
               
               if (input instanceof Command) {
                 Log.d(TAG, "Input is a Command.");
@@ -82,10 +90,12 @@ public class CommunicationThread implements Runnable {
               else if (input instanceof Package) {
                 Log.d(TAG, "Input is a Package.");
                 Package receivedPackage = (Package) input;
+                Device sendingDevice = receivedPackage.getSendingDevice();
+                Device receivingDevice = receivedPackage.getReceivingDevice();
                 Log.d(TAG, "Package command: " + receivedPackage.getCommand());
-                Log.i(TAG, "Device Name: " + receivedPackage.getSendingDevice().getDeviceName());
+                Log.i(TAG, "Device Name: " + sendingDevice.getDeviceName());
   
-                receivedPackage.getSendingDevice().setSocket(socket);
+                if (receivingDevice != null) receivingDevice.setSocket(mSocket);
                 if (onInputListener != null) onInputListener.onReceive(receivedPackage);
   
                 Thread.currentThread().interrupt();
@@ -111,20 +121,20 @@ public class CommunicationThread implements Runnable {
         case INFO_REQ:
           Log.d(TAG, "In INFO_REQ");
           // Request device info from server.
-          send(command);
+          send(mCommand);
   
           // Listen for the answer.
-          command = Command.LISTEN;
+          mCommand = Command.LISTEN;
           break;
     
         case INFO:
           Log.d(TAG, "In INFO");
           // Send device info to the client.
-          aPackage = new Package(Command.INFO, sendingDevice, receivingDevice);
+          aPackage = new Package(Command.INFO, mSendingDevice, mReceivingDevice);
           send(aPackage);
   
           try {
-            socket.close();
+            mSocket.close();
           } catch (IOException e) {
             e.printStackTrace();
           }
@@ -134,24 +144,22 @@ public class CommunicationThread implements Runnable {
         case PAIR_REQ:
           Log.d(TAG, "In PAIR_REQ");
           // Send pair request to server.
-          aPackage = new Package(Command.PAIR_REQ, sendingDevice, receivingDevice);
+          aPackage = new Package(Command.PAIR_REQ, mSendingDevice, mReceivingDevice);
           send(aPackage);
   
-          command = Command.LISTEN;
+          mCommand = Command.LISTEN;
           break;
     
         default:
-          Log.d(TAG, "In default. Command: " + command);
-          aPackage = new Package(command, sendingDevice, receivingDevice);
-          if (sendingDevice != null) sendingDevice.setSocket(null);
-          if (receivingDevice != null) receivingDevice.setSocket(null);
+          Log.d(TAG, "In default. Command: " + mCommand);
+          aPackage = new Package(mCommand, mSendingDevice, mReceivingDevice);
           send(aPackage);
           Thread.currentThread().interrupt();
           break;
       }
     }
   
-    Log.d(TAG, "Thread interrupted. Command: " + command);
+    Log.d(TAG, "Thread interrupted. Command: " + mCommand);
   }
   
   private void yesSir(Command command) {
@@ -160,19 +168,21 @@ public class CommunicationThread implements Runnable {
     switch (command) {
       case INFO_REQ:
         Log.d(TAG, "In yesSir INFO_REQ");
-        this.command = Command.INFO;
+        this.mCommand = Command.INFO;
         break;
     }
   }
   
   private void send(Object object) {
     try {
-      ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+      ObjectOutputStream out = new ObjectOutputStream(mSocket.getOutputStream());
       out.writeObject(object);
     } catch (IOException e) {
       e.printStackTrace();
+      Thread.currentThread().interrupt();
     } catch (Exception e) {
       e.printStackTrace();
+      Thread.currentThread().interrupt();
     }
   }
   

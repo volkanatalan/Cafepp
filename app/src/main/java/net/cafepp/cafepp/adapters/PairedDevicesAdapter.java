@@ -141,7 +141,7 @@ public class PairedDevicesAdapter extends BaseAdapter {
     return false;
   }
   
-  public void setFoundByMac(Device device, boolean isFound) {
+  public void setFound(Device device, boolean isFound) {
     String mac = device.getMacAddress();
     int pos = getPositionByMac(mac);
     
@@ -172,7 +172,7 @@ public class PairedDevicesAdapter extends BaseAdapter {
           return i;
       }
     }
-    Log.d(TAG, "Unable to find a device with the MAC address " + macAddress);
+    Log.d(TAG, "Not found a device with the same MAC address.");
     return -1;
   }
   

@@ -40,7 +40,7 @@ public class PairDevice extends Device {
   public PairDevice setServerPaired(boolean serverPaired) {
     isServerPaired = serverPaired;
     if (onPairedListener != null && serverPaired) {
-      onPairedListener.onPaired(isBothPaired(), this);
+      onPairedListener.onPaired(isBothPaired(), getDevice());
     }
     return this;
   }
@@ -52,7 +52,7 @@ public class PairDevice extends Device {
   public PairDevice setClientPaired(boolean clientPaired) {
     isClientPaired = clientPaired;
     if (onPairedListener != null && clientPaired) {
-      onPairedListener.onPaired(isBothPaired(), this);
+      onPairedListener.onPaired(isBothPaired(), getDevice());
     }
     return this;
   }
@@ -64,7 +64,7 @@ public class PairDevice extends Device {
   private OnPairedListener onPairedListener;
   
   public interface OnPairedListener {
-    void onPaired(boolean isBothConfirmed, PairDevice device);
+    void onPaired(boolean isBothConfirmed, Device device);
   }
   
   public PairDevice setOnPairedListener(OnPairedListener listener) {

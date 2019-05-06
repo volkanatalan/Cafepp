@@ -6,17 +6,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.support.annotation.NonNull;
-import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,7 +27,6 @@ import net.cafepp.cafepp.connection.Command;
 import net.cafepp.cafepp.connection.Package;
 import net.cafepp.cafepp.databases.DeviceDatabase;
 import net.cafepp.cafepp.fragments.ChangeDeviceNameFragment;
-import net.cafepp.cafepp.fragments.ConnectFragment;
 import net.cafepp.cafepp.fragments.PairFragment;
 import net.cafepp.cafepp.objects.Device;
 import net.cafepp.cafepp.services.ServerService;
@@ -41,8 +34,7 @@ import net.cafepp.cafepp.services.ServerService;
 import java.io.Serializable;
 import java.util.List;
 
-public class DevicesActivity extends AppCompatActivity
-    implements NavigationView.OnNavigationItemSelectedListener {
+public class DevicesActivity extends AppCompatActivity {
   
   private final String TAG = "DevicesActivity";
   public FrameLayout interlayer;
@@ -68,18 +60,6 @@ public class DevicesActivity extends AppCompatActivity
   
     connectSwitch.setChecked(isServiceRunning);
     setSwitchCheckedChangeListener(connectSwitch);
-    
-    Toolbar toolbar = findViewById(R.id.toolbar);
-    setSupportActionBar(toolbar);
-  
-    DrawerLayout drawer = findViewById(R.id.drawer_layout);
-    ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-        this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-    drawer.addDrawerListener(toggle);
-    toggle.syncState();
-  
-    NavigationView navigationView = findViewById(R.id.nav_view);
-    navigationView.setNavigationItemSelectedListener(this);
   
     checkedTextView.setOnClickListener(v -> setTextViewChecked(checkedTextView.isChecked(), true));
     
@@ -88,14 +68,6 @@ public class DevicesActivity extends AppCompatActivity
     LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter("DeviceActivity"));
   
     deviceDatabase = new DeviceDatabase(getApplicationContext());
-  
-    if (deviceDatabase.getDevicesAsServer().size() == 0) {
-      deviceDatabase.addAsServer(new Device("Aşçı"));
-      deviceDatabase.addAsServer(new Device("Garson1"));
-      deviceDatabase.addAsServer(new Device("Garson2"));
-      deviceDatabase.addAsServer(new Device("Garson3"));
-      deviceDatabase.addAsServer(new Device("Kasa"));
-    }
   
     List<Device> devices = deviceDatabase.getDevicesAsServer();
     pairedDevicesAdapter = new PairedDevicesAdapter(devices);
@@ -116,16 +88,6 @@ public class DevicesActivity extends AppCompatActivity
     LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
     deviceDatabase.close();
     super.onDestroy();
-  }
-  
-  @Override
-  public void onBackPressed() {
-    DrawerLayout drawer = findViewById(R.id.drawer_layout);
-    if (drawer.isDrawerOpen(GravityCompat.START)) {
-      drawer.closeDrawer(GravityCompat.START);
-    } else {
-      super.onBackPressed();
-    }
   }
   
   @Override
@@ -150,31 +112,6 @@ public class DevicesActivity extends AppCompatActivity
     return super.onOptionsItemSelected(item);
   }
   
-  @SuppressWarnings("StatementWithEmptyBody")
-  @Override
-  public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-    // Handle navigation view item clicks here.
-    int id = item.getItemId();
-    
-    if (id == R.id.nav_devices) {
-      
-    } else if (id == R.id.nav_gallery) {
-    
-    } else if (id == R.id.nav_slideshow) {
-    
-    } else if (id == R.id.nav_manage) {
-    
-    } else if (id == R.id.nav_share) {
-    
-    } else if (id == R.id.nav_send) {
-    
-    }
-    
-    DrawerLayout drawer = findViewById(R.id.drawer_layout);
-    drawer.closeDrawer(GravityCompat.START);
-    return true;
-  }
-  
   private void setSwitchCheckedChangeListener(Switch s) {
     s.setOnCheckedChangeListener((buttonView, isChecked) -> {
       Intent serverServiceIntent = new Intent(this, ServerService.class);
@@ -186,9 +123,10 @@ public class DevicesActivity extends AppCompatActivity
         Log.d(TAG, "Switch checked true");
         checkedTextView.setVisibility(View.VISIBLE);
         startService(serverServiceIntent);
-        
-      } else {
+      }
+      else {
         Log.d(TAG, "Switch checked false");
+        pairedDevicesAdapter.setAllDisconnected();
         stopService(serverServiceIntent);
         checkedTextView.setVisibility(View.GONE);
       }
@@ -307,6 +245,7 @@ public class DevicesActivity extends AppCompatActivity
               if (fragmentMac.equals(packageMac)) {
                 if (i == fragments.size() - 1) {
                   getSupportFragmentManager().popBackStack();
+                  interlayer.setVisibility(View.GONE);
                 } else {
                   fragments.remove(i);
                   break;
@@ -350,16 +289,20 @@ public class DevicesActivity extends AppCompatActivity
       new PairFragment.OnButtonClickListener() {
     @Override
     public void onClickPair(Package aPackage) {
-      interlayer.setVisibility(View.GONE);
       aPackage.setCommand(Command.PAIR_SERVER_ACCEPT);
       sendMessageToServerService(aPackage);
+  
+      getSupportFragmentManager().popBackStack();
+      interlayer.setVisibility(View.GONE);
     }
   
     @Override
     public void onClickDecline(Package aPackage) {
-      interlayer.setVisibility(View.GONE);
       aPackage.setCommand(Command.PAIR_SERVER_DECLINE);
       sendMessageToServerService(aPackage);
+  
+      getSupportFragmentManager().popBackStack();
+      interlayer.setVisibility(View.GONE);
     }
   };
   

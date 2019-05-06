@@ -19,7 +19,7 @@
         tools:ignore="GoogleAppIndexingWarning">
 
         <activity android:name=".activities.DevicesActivity"
-            android:theme="@style/AppTheme.NoActionBar"
+            android:label="@string/devices"
             android:launchMode="singleTask"/>
 
         <activity
