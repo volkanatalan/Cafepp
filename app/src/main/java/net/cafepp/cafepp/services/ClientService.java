@@ -164,7 +164,23 @@ public class ClientService extends Service {
       case PAIR_SERVER_ACCEPT:
         Log.d(TAG, "PAIR_SERVER_ACCEPT");
         position = getPWDListPositionByMac(sendingDevice.getMacAddress());
-        if (position != -1) pairWaitingDevices.get(position).setServerPaired(true);
+        if (position != -1) {
+          pairWaitingDevices.get(position).setClientType(receivingDevice.getClientType());
+          pairWaitingDevices.get(position).setServerPaired(true);
+        }
+  
+        // Inform ConnectActivity that server declined to pair.
+        sendMessageToActivity(pkg);
+        break;
+  
+      case PAIR_CLIENT_ACCEPT:
+        Log.d(TAG, "PAIR_CLIENT_ACCEPT");
+        position = getPWDListPositionByMac(receivingDevice.getMacAddress());
+        if (position != -1) {
+          pairWaitingDevices.get(position).setClientType(sendingDevice.getClientType());
+          pairWaitingDevices.get(position).setClientPaired(true);
+          communicateWithServer(pkg);
+        }
         break;
         
       case PAIR_SERVER_DECLINE:
@@ -176,15 +192,6 @@ public class ClientService extends Service {
           
           // Inform ConnectActivity that server declined to pair.
           sendMessageToActivity(pkg);
-        }
-        break;
-        
-      case PAIR_CLIENT_ACCEPT:
-        Log.d(TAG, "PAIR_CLIENT_ACCEPT");
-        position = getPWDListPositionByMac(receivingDevice.getMacAddress());
-        if (position != -1) {
-          pairWaitingDevices.get(position).setClientPaired(true);
-          communicateWithServer(pkg);
         }
         break;
         

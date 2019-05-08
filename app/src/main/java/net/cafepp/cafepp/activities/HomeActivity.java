@@ -15,6 +15,7 @@ import android.view.MenuItem;
 
 import net.cafepp.cafepp.R;
 import net.cafepp.cafepp.fragments.HomeFragment;
+import net.cafepp.cafepp.fragments.TablesFragment;
 
 public class HomeActivity extends AppCompatActivity
     implements NavigationView.OnNavigationItemSelectedListener {
@@ -79,9 +80,17 @@ public class HomeActivity extends AppCompatActivity
     int id = item.getItemId();
   
     if (id == R.id.nav_home) {
-    
+      getSupportFragmentManager().popBackStackImmediate();
+      FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+      ft.replace(R.id.fragmentContainer, new HomeFragment(), "HomeFragment");
+      ft.commit();
+      
     }
     else if (id == R.id.nav_tables) {
+      FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+      ft.replace(R.id.fragmentContainer, new TablesFragment(), "TablesFragment");
+      ft.addToBackStack("TablesFragment");
+      ft.commit();
   
     }
     else if (id == R.id.nav_stock) {

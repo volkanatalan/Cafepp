@@ -50,9 +50,10 @@ public class AvailableDevicesListViewAdapter extends BaseAdapter {
                         .inflate(R.layout.list_row_connect_devices, parent, false);
   
       viewHolder.deviceName = convertView.findViewById(R.id.deviceNameTextView);
-      viewHolder.ip = convertView.findViewById(R.id.ipTextView);
+      viewHolder.ip = convertView.findViewById(R.id.text2);
       viewHolder.ip.setVisibility(View.VISIBLE);
       viewHolder.deviceType = convertView.findViewById(R.id.connectImageView);
+      convertView.findViewById(R.id.deviceType).setVisibility(View.GONE);
   
       // Save View Holder to reuse it later.
       convertView.setTag(viewHolder);

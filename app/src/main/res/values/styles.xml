@@ -32,5 +32,4 @@
     <style name="NavDrawerTextStyle" parent="Base.TextAppearance.AppCompat">
         <item name="android:textSize">16sp</item>
     </style>
-
 </resources>

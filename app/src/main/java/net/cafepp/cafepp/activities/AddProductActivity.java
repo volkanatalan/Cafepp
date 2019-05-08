@@ -190,7 +190,7 @@ public class AddProductActivity extends AppCompatActivity {
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     MenuInflater menuInflater = getMenuInflater();
-    menuInflater.inflate(R.menu.done_only, menu);
+    menuInflater.inflate(R.menu.done, menu);
     return super.onCreateOptionsMenu(menu);
   }
   

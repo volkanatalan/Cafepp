@@ -130,7 +130,7 @@ public class CommunicationThread implements Runnable {
         case INFO:
           Log.d(TAG, "In INFO");
           // Send device info to the client.
-          aPackage = new Package(Command.INFO, mSendingDevice, mReceivingDevice);
+          aPackage = new Package(mCommand, mSendingDevice, mReceivingDevice);
           send(aPackage);
   
           try {
@@ -144,9 +144,10 @@ public class CommunicationThread implements Runnable {
         case PAIR_REQ:
           Log.d(TAG, "In PAIR_REQ");
           // Send pair request to server.
-          aPackage = new Package(Command.PAIR_REQ, mSendingDevice, mReceivingDevice);
+          aPackage = new Package(mCommand, mSendingDevice, mReceivingDevice);
           send(aPackage);
   
+          // Listen for the answer.
           mCommand = Command.LISTEN;
           break;
     

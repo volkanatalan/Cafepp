@@ -6,6 +6,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import net.cafepp.cafepp.R;
+import net.cafepp.cafepp.connection.ClientType;
 import net.cafepp.cafepp.objects.Device;
 
 import java.util.ArrayList;
@@ -21,6 +23,7 @@ public class DeviceDatabase extends SQLiteOpenHelper {
   private static final String COLUMN_DEVICE_ID = "_id";
   private static final String COLUMN_DEVICE_NAME = "DeviceName";
   private static final String COLUMN_DEVICE_MAC = "DeviceMacAddress";
+  private static final String COLUMN_CLIENT_TYPE = "ClientType";
   
   public DeviceDatabase(Context context) {
     super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -32,14 +35,16 @@ public class DeviceDatabase extends SQLiteOpenHelper {
         "CREATE TABLE " + TABLE_SERVER + "(" +
             COLUMN_DEVICE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
             COLUMN_DEVICE_NAME + " TEXT, " +
-            COLUMN_DEVICE_MAC + " TEXT" + ");";
+            COLUMN_DEVICE_MAC + " TEXT," +
+            COLUMN_CLIENT_TYPE + " TEXT" + ");";
     
     
     String createTableClient =
         "CREATE TABLE " + TABLE_CLIENT + "(" +
             COLUMN_DEVICE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
             COLUMN_DEVICE_NAME + " TEXT, " +
-            COLUMN_DEVICE_MAC + " TEXT" + ");";
+            COLUMN_DEVICE_MAC + " TEXT," +
+            COLUMN_CLIENT_TYPE + " TEXT" + ");";
   
     db.execSQL(createTableServer);
     db.execSQL(createTableClient);
@@ -55,11 +60,13 @@ public class DeviceDatabase extends SQLiteOpenHelper {
   public void addAsServer(Device device) {
     String deviceName = device.getDeviceName();
     String mac = device.getMacAddress();
+    String clientType = device.getClientType().toString();
     
     SQLiteDatabase db = this.getWritableDatabase();
     ContentValues values = new ContentValues();
     values.put(COLUMN_DEVICE_NAME, deviceName==null ? "" : deviceName);
     values.put(COLUMN_DEVICE_MAC, mac==null ? "" : mac);
+    values.put(COLUMN_CLIENT_TYPE, clientType);
     db.insert(TABLE_SERVER, "", values);
     db.close();
   }
@@ -67,11 +74,13 @@ public class DeviceDatabase extends SQLiteOpenHelper {
   public void addAsClient(Device device) {
     String deviceName = device.getDeviceName();
     String mac = device.getMacAddress();
+    String clientType = device.getClientType().toString();
     
     SQLiteDatabase db = this.getWritableDatabase();
     ContentValues values = new ContentValues();
     values.put(COLUMN_DEVICE_NAME, deviceName==null ? "" : deviceName);
     values.put(COLUMN_DEVICE_MAC, mac==null ? "" : mac);
+    values.put(COLUMN_CLIENT_TYPE, clientType);
     db.insert(TABLE_CLIENT, "", values);
     db.close();
   }
@@ -87,6 +96,7 @@ public class DeviceDatabase extends SQLiteOpenHelper {
       device.setId(c.getInt(c.getColumnIndex(COLUMN_DEVICE_ID)));
       device.setDeviceName(c.getString(c.getColumnIndex(COLUMN_DEVICE_NAME)));
       device.setMacAddress(c.getString(c.getColumnIndex(COLUMN_DEVICE_MAC)));
+      device.setClientType(c.getString(c.getColumnIndex(COLUMN_CLIENT_TYPE)));
       
       devices.add(device);
     }
@@ -107,6 +117,7 @@ public class DeviceDatabase extends SQLiteOpenHelper {
       device.setId(c.getInt(c.getColumnIndex(COLUMN_DEVICE_ID)));
       device.setDeviceName(c.getString(c.getColumnIndex(COLUMN_DEVICE_NAME)));
       device.setMacAddress(c.getString(c.getColumnIndex(COLUMN_DEVICE_MAC)));
+      device.setClientType(c.getString(c.getColumnIndex(COLUMN_CLIENT_TYPE)));
       
       devices.add(device);
     }
@@ -134,6 +145,7 @@ public class DeviceDatabase extends SQLiteOpenHelper {
     contentValues.put(COLUMN_DEVICE_ID, device.getId());
     contentValues.put(COLUMN_DEVICE_NAME, device.getDeviceName());
     contentValues.put(COLUMN_DEVICE_MAC, device.getMacAddress());
+    contentValues.put(COLUMN_CLIENT_TYPE, device.getClientType().toString());
     db.update(TABLE_CLIENT, contentValues, "id = ?", new String[]{device.getId() + ""});
   }
 }

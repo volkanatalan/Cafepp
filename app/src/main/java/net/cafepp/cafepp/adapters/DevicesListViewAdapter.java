@@ -52,7 +52,7 @@ public class DevicesListViewAdapter extends BaseAdapter {
                         .inflate(R.layout.list_row_connect_devices, parent, false);
   
       viewHolder.deviceName = convertView.findViewById(R.id.deviceNameTextView);
-      viewHolder.ip = convertView.findViewById(R.id.ipTextView);
+      viewHolder.ip = convertView.findViewById(R.id.text2);
       viewHolder.connectImage = convertView.findViewById(R.id.connectImageView);
       
       // Save View Holder to reuse it later.

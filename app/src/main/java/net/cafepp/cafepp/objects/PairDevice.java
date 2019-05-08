@@ -18,6 +18,7 @@ public class PairDevice extends Device {
     device.setMacAddress(getMacAddress());
     device.setPairKey(getPairKey());
     device.setTablet(isTablet());
+    device.setClientType(getClientType());
     return device;
   }
   
@@ -30,6 +31,7 @@ public class PairDevice extends Device {
     setMacAddress(device.getMacAddress());
     setPairKey(device.getPairKey());
     setTablet(device.isTablet());
+    setClientType(device.getClientType());
     return this;
   }
   

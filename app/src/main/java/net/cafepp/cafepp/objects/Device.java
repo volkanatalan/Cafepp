@@ -1,6 +1,9 @@
 package net.cafepp.cafepp.objects;
 
 import android.net.nsd.NsdServiceInfo;
+import android.util.Log;
+
+import net.cafepp.cafepp.connection.ClientType;
 
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -10,7 +13,7 @@ import java.net.UnknownHostException;
 public class Device implements Serializable {
   private int id;
   private String deviceName;
-  Socket socket;
+  private Socket socket;
   private String serviceType = "_cafepp._tcp.";
   private int port = 0;
   private String ipAddress;
@@ -20,6 +23,7 @@ public class Device implements Serializable {
   private boolean allowPairReq = false;
   private boolean isFound = false;
   private boolean isConnected = false;
+  private ClientType clientType;
   
   public Device() {
   }
@@ -143,6 +147,54 @@ public class Device implements Serializable {
   public Device setTablet(boolean tablet) {
     isTablet = tablet;
     return this;
+  }
+  
+  public ClientType getClientType() {
+    return clientType;
+  }
+  
+  public void setClientType(ClientType clientType) {
+    this.clientType = clientType;
+  }
+  
+  public void setClientType(String clientType) {
+    ClientType type = ClientType.WAITER;
+    switch (clientType) {
+      case "Cashier":
+        type = ClientType.CASHIER;
+        break;
+      case "CASHIER":
+        type = ClientType.CASHIER;
+        break;
+      case "Cook":
+        type = ClientType.COOK;
+        break;
+      case "COOK":
+        type = ClientType.COOK;
+        break;
+      case "Customer":
+        type = ClientType.CUSTOMER;
+        break;
+      case "CUSTOMER":
+        type = ClientType.CUSTOMER;
+        break;
+      case "Manager":
+        type = ClientType.MANAGER;
+        break;
+      case "MANAGER":
+        type = ClientType.MANAGER;
+        break;
+      case "Waiter":
+        type = ClientType.WAITER;
+        break;
+      case "WAITER":
+        type = ClientType.WAITER;
+        break;
+      default:
+        Log.e("Device", "Wrong client Type!");
+        break;
+    }
+    this.clientType = type;
   }
   
   public NsdServiceInfo getNsdServiceInfo() {

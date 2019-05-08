@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android=
+    "http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:minWidth="450dp"
+    android:layout_height="wrap_content"
+    android:layout_margin="10dp"
+    android:background="@drawable/stroke_white_background"
+    android:orientation="vertical"
+    android:clickable="true"
+    android:focusable="true"
+    android:layout_gravity="center"
+    tools:context=".fragments.PairClientFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/default_padding"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/deviceNameLabelTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/device_name_semicolon"
+            android:textSize="@dimen/h2"
+            android:textColor="@color/colorPrimary"/>
+
+        <TextView
+            android:id="@+id/deviceNameTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/default_margin_bottom"
+            android:text="DeviceName"
+            android:textSize="@dimen/h3"
+            android:textColor="@color/black" />
+
+        <TextView
+            android:id="@+id/pairKeyLabelTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/pair_key_semicolon"
+            android:textSize="@dimen/h2"
+            android:textColor="@color/colorPrimary"/>
+
+        <TextView
+            android:id="@+id/pairKeyTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/default_margin_bottom"
+            android:text="12345"
+            android:textSize="@dimen/h5"
+            android:textAlignment="center"
+            android:textColor="@color/black"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/clientTypeLabelTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/client_type"
+            android:textSize="@dimen/h2"
+            android:textColor="@color/colorPrimary"/>
+
+        <TextView
+            android:id="@+id/clientTypeTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/default_margin_bottom"
+            android:text="Waiter"
+            android:textSize="@dimen/h3"
+            android:textColor="@color/black"
+            android:visibility="gone"/>
+
+        <LinearLayout
+            android:id="@+id/clientTypeProgressBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/default_margin_bottom"
+            android:gravity="center">
+
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminate="true" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/small_padding"
+                android:text="Waiting for server"/>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/does_it_match"
+            android:textSize="@dimen/h1"
+            android:lines="2"
+            android:typeface="monospace"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/separatorH"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/black_overlay"
+        android:orientation="horizontal" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/decline"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="@dimen/default_padding"
+            android:text="@string/cancel"
+            android:textAlignment="center"
+            android:textSize="@dimen/h2" />
+
+        <LinearLayout
+            android:id="@+id/separatorV"
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@color/black_overlay"
+            android:orientation="vertical"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/pair"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="@dimen/default_padding"
+            android:text="@string/pair"
+            android:textAlignment="center"
+            android:textSize="@dimen/h2"
+            android:textStyle="bold"
+            android:visibility="gone"/>
+    </LinearLayout>
+
+</LinearLayout>

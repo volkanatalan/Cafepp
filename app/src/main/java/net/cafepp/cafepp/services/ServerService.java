@@ -253,7 +253,10 @@ public class ServerService extends Service {
       case PAIR_SERVER_ACCEPT:
         Log.d(TAG, "PAIR_SERVER_ACCEPT");
         position = getPWDListPositionByMac(receivingDevice.getMacAddress());
-        if (position != -1) pairWaitingDevices.get(position).setServerPaired(true);
+        if (position != -1) {
+          pairWaitingDevices.get(position).setClientType(receivingDevice.getClientType());
+          pairWaitingDevices.get(position).setServerPaired(true);
+        }
         pairedDevices.add(receivingDevice);
         sendPackageToClient(aPackage);
         break;
@@ -268,7 +271,10 @@ public class ServerService extends Service {
       case PAIR_CLIENT_ACCEPT:
         Log.d(TAG, "PAIR_CLIENT_ACCEPT");
         position = getPWDListPositionByMac(sendingDevice.getMacAddress());
-        if (position != -1) pairWaitingDevices.get(position).setClientPaired(true);
+        if (position != -1) {
+          pairWaitingDevices.get(position).setClientType(sendingDevice.getClientType());
+          pairWaitingDevices.get(position).setClientPaired(true);
+        }
         sendPackageToDeviceActivity(aPackage);
         break;
         

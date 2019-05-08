@@ -21,7 +21,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/default_margin_bottom"
             android:text="@string/connect"
-            android:textSize="@dimen/connect_switch_font"/>
+            android:textSize="@dimen/h3"/>
 
         <CheckedTextView
             android:id="@+id/checkedTextView"
@@ -30,7 +30,7 @@
             android:layout_marginBottom="@dimen/default_margin_bottom"
             android:gravity="center_vertical"
             android:text="@string/only_visible_to_paired_devices"
-            android:textSize="16sp"
+            android:textSize="@dimen/h1"
             android:checkMark="@drawable/checkbox_selector"
             android:visibility="gone"/>
 
@@ -39,7 +39,7 @@
             android:layout_height="wrap_content"
             android:text="@string/my_device"
             android:textColor="@color/colorPrimary"
-            android:textSize="@dimen/label_font_size"/>
+            android:textSize="@dimen/h2"/>
 
         <RelativeLayout
             android:id="@+id/separator"
@@ -55,14 +55,14 @@
             android:layout_marginBottom="@dimen/default_margin_bottom"
             android:text="@string/my_device"
             android:textColor="@color/black"
-            android:textSize="20sp"/>
+            android:textSize="@dimen/h3"/>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/paired_devices_semicolon"
             android:textColor="@color/colorPrimary"
-            android:textSize="@dimen/label_font_size"/>
+            android:textSize="@dimen/h2"/>
 
         <RelativeLayout
             android:id="@+id/separator2"

@@ -1,5 +1,6 @@
 package net.cafepp.cafepp.adapters;
 
+import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,29 +18,33 @@ import java.util.List;
 public class PairedDevicesAdapter extends BaseAdapter {
   
   private final String TAG = "PairedDevicesLVAdapter";
-  private List<Device> devices = new ArrayList<>();
+  private Context mContext;
+  private List<Device> mDevices = new ArrayList<>();
   
   public PairedDevicesAdapter() {
     // Empty constructor.
   }
   
-  public PairedDevicesAdapter(List<Device> devices) {
-    this.devices = devices;
+  public PairedDevicesAdapter(Context context, List<Device> devices) {
+    mContext = context;
+    mDevices = devices;
   }
   
   private static class ViewHolder{
     TextView deviceNameTextView;
+    TextView clientTypeTextView;
+    ImageView deviceTypeImageView;
     ImageView isConnectedImageView;
   }
   
   @Override
   public int getCount() {
-    return devices.size();
+    return mDevices.size();
   }
   
   @Override
   public Device getItem(int position) {
-    return devices.get(position);
+    return mDevices.get(position);
   }
   
   @Override
@@ -55,8 +60,10 @@ public class PairedDevicesAdapter extends BaseAdapter {
       viewHolder = new PairedDevicesAdapter.ViewHolder();
       convertView = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.list_row_connect_devices, parent, false);
-      
+  
       viewHolder.deviceNameTextView = convertView.findViewById(R.id.deviceNameTextView);
+      viewHolder.clientTypeTextView = convertView.findViewById(R.id.text2);
+      viewHolder.deviceTypeImageView = convertView.findViewById(R.id.deviceType);
       viewHolder.isConnectedImageView = convertView.findViewById(R.id.connectImageView);
       
       // Save View Holder to reuse it later.
@@ -67,8 +74,34 @@ public class PairedDevicesAdapter extends BaseAdapter {
       viewHolder = (PairedDevicesAdapter.ViewHolder) convertView.getTag();
     }
     
-    Device device = devices.get(position);
+    Device device = mDevices.get(position);
+    boolean isTablet = device.isTablet();
     viewHolder.deviceNameTextView.setText(device.getDeviceName());
+  
+    int deviceTypeDrawable = isTablet ? R.drawable.tablet_with_logo : R.drawable.phone_with_logo;
+    viewHolder.deviceTypeImageView.setImageResource(deviceTypeDrawable);
+  
+    String clientType = "";
+    if (mContext != null) {
+      switch (device.getClientType()) {
+        case COOK:
+          clientType = mContext.getResources().getString(R.string.cook);
+          break;
+        case CASHIER:
+          clientType = mContext.getResources().getString(R.string.cashier);
+          break;
+        case CUSTOMER:
+          clientType = mContext.getResources().getString(R.string.customer);
+          break;
+        case MANAGER:
+          clientType = mContext.getResources().getString(R.string.manager);
+          break;
+        case WAITER:
+          clientType = mContext.getResources().getString(R.string.waiter);
+          break;
+      }
+      viewHolder.clientTypeTextView.setText(clientType);
+    }
     
     // Show the type of device (phone or tablet).
     if (device.isConnected())
@@ -81,18 +114,18 @@ public class PairedDevicesAdapter extends BaseAdapter {
     return convertView;
   }
   
-  public List<Device> getDevices() {
-    return devices;
+  public List<Device> getmDevices() {
+    return mDevices;
   }
   
   public void setPairedDevices(List<Device> devices) {
-    this.devices = devices;
+    this.mDevices = devices;
     Log.d(TAG, devices.size() + " devices are added to the list.");
     notifyDataSetChanged();
   }
   
   public void add(Device device) {
-    devices.add(0, device);
+    mDevices.add(0, device);
     Log.d(TAG, "Paired device is added: " + device.getDeviceName());
     notifyDataSetChanged();
   }
@@ -100,13 +133,13 @@ public class PairedDevicesAdapter extends BaseAdapter {
   public void remove(Device device) {
     int pos = getPositionByMac(device.getMacAddress());
     if (pos > -1) {
-      devices.remove(pos);
+      mDevices.remove(pos);
       notifyDataSetChanged();
     }
   }
   
   public void clear() {
-    devices.clear();
+    mDevices.clear();
     Log.d(TAG, "List is clear.");
     notifyDataSetChanged();
   }
@@ -115,18 +148,18 @@ public class PairedDevicesAdapter extends BaseAdapter {
     int pos = getPositionByMac(device.getMacAddress());
     if (pos > -1) {
       device.setConnected(isConnected);
-      devices.set(pos, device);
+      mDevices.set(pos, device);
       notifyDataSetChanged();
     }
   }
   
   public void setConnected(int pos, boolean isConnected) {
-    devices.get(pos).setConnected(isConnected);
+    mDevices.get(pos).setConnected(isConnected);
     notifyDataSetChanged();
   }
   
   public void setAllDisconnected() {
-    for (Device device : devices) {
+    for (Device device : mDevices) {
       device.setConnected(false);
       device.setFound(false);
     }
@@ -134,7 +167,7 @@ public class PairedDevicesAdapter extends BaseAdapter {
   }
   
   public boolean isContain(String macAddress) {
-    for (Device device : devices) {
+    for (Device device : mDevices) {
       if (device.getMacAddress().equals(macAddress))
         return true;
     }
@@ -148,8 +181,8 @@ public class PairedDevicesAdapter extends BaseAdapter {
     // If there is a device with the same MAC address in database, set it as found
     if (pos > -1) {
       device.setFound(isFound);
-      devices.set(pos, device);
-      if (!isFound) devices.get(pos).setConnected(false);
+      mDevices.set(pos, device);
+      if (!isFound) mDevices.get(pos).setConnected(false);
       notifyDataSetChanged();
     }
   }
@@ -159,16 +192,16 @@ public class PairedDevicesAdapter extends BaseAdapter {
     
     // If there is a device with the same MAC address in database, set it as found
     if (pos > -1) {
-      devices.get(pos).setFound(isFound);
-      if (!isFound) devices.get(pos).setConnected(false);
+      mDevices.get(pos).setFound(isFound);
+      if (!isFound) mDevices.get(pos).setConnected(false);
       notifyDataSetChanged();
     }
   }
   
   public int getPositionByMac(String macAddress) {
-    if (devices.size() > 0) {
-      for (int i = 0; i < devices.size(); i++) {
-        if (devices.get(i).getMacAddress().equals(macAddress))
+    if (mDevices.size() > 0) {
+      for (int i = 0; i < mDevices.size(); i++) {
+        if (mDevices.get(i).getMacAddress().equals(macAddress))
           return i;
       }
     }
@@ -177,9 +210,9 @@ public class PairedDevicesAdapter extends BaseAdapter {
   }
   
   public int getPositionByName(String deviceName) {
-    if (devices.size() > 0) {
-      for (int i = 0; i < devices.size(); i++) {
-        if (devices.get(i).getDeviceName().equals(deviceName))
+    if (mDevices.size() > 0) {
+      for (int i = 0; i < mDevices.size(); i++) {
+        if (mDevices.get(i).getDeviceName().equals(deviceName))
           return i;
       }
     }

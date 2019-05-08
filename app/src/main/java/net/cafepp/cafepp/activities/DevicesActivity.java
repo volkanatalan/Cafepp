@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.opengl.Visibility;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
@@ -27,11 +28,12 @@ import net.cafepp.cafepp.connection.Command;
 import net.cafepp.cafepp.connection.Package;
 import net.cafepp.cafepp.databases.DeviceDatabase;
 import net.cafepp.cafepp.fragments.ChangeDeviceNameFragment;
-import net.cafepp.cafepp.fragments.PairFragment;
+import net.cafepp.cafepp.fragments.PairServerFragment;
 import net.cafepp.cafepp.objects.Device;
 import net.cafepp.cafepp.services.ServerService;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class DevicesActivity extends AppCompatActivity {
@@ -61,6 +63,8 @@ public class DevicesActivity extends AppCompatActivity {
     connectSwitch.setChecked(isServiceRunning);
     setSwitchCheckedChangeListener(connectSwitch);
   
+    int checkedTextViewVisibility = isServiceRunning ? View.VISIBLE : View.GONE;
+    checkedTextView.setVisibility(checkedTextViewVisibility);
     checkedTextView.setOnClickListener(v -> setTextViewChecked(checkedTextView.isChecked(), true));
     
     deviceNameTextView.setOnClickListener(deviceNameTextViewOnClickListener);
@@ -70,9 +74,7 @@ public class DevicesActivity extends AppCompatActivity {
     deviceDatabase = new DeviceDatabase(getApplicationContext());
   
     List<Device> devices = deviceDatabase.getDevicesAsServer();
-    pairedDevicesAdapter = new PairedDevicesAdapter(devices);
-    pairedDevicesAdapter.setConnected(1, true);
-  
+    pairedDevicesAdapter = new PairedDevicesAdapter(this, devices);
     pairedDevicesListView.setAdapter(pairedDevicesAdapter);
   }
   
@@ -228,9 +230,9 @@ public class DevicesActivity extends AppCompatActivity {
           FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
           ft.setCustomAnimations(R.anim.enter_from_bottom, R.anim.exit_to_top,
               R.anim.enter_from_bottom, R.anim.exit_to_top)
-              .replace(R.id.fragmentContainer, PairFragment.newInstance(
-                  answerPackage, mOnButtonClickListenerPF), "PairFragment")
-              .addToBackStack("PairFragment")
+              .replace(R.id.fragmentContainer, PairServerFragment.newInstance(context,
+                  answerPackage, mOnButtonClickListenerPF), "PairServerFragment")
+              .addToBackStack("PairServerFragment")
               .commit();
           break;
           
@@ -238,8 +240,8 @@ public class DevicesActivity extends AppCompatActivity {
           Log.d(TAG, "PAIR_CLIENT_DECLINE");
           List<Fragment> fragments = getSupportFragmentManager().getFragments();
           for (int i = 0; i < fragments.size(); i++) {
-            if (fragments.get(i) instanceof PairFragment) {
-              String fragmentMac = ((PairFragment)fragments.get(i)).getPackage().getReceivingDevice().getMacAddress();
+            if (fragments.get(i) instanceof PairServerFragment) {
+              String fragmentMac = ((PairServerFragment)fragments.get(i)).getPackage().getReceivingDevice().getMacAddress();
               String packageMac = "";
               if (sendingDevice != null) packageMac = sendingDevice.getMacAddress();
               if (fragmentMac.equals(packageMac)) {
@@ -285,8 +287,8 @@ public class DevicesActivity extends AppCompatActivity {
     }
   };
   
-  private PairFragment.OnButtonClickListener mOnButtonClickListenerPF =
-      new PairFragment.OnButtonClickListener() {
+  private PairServerFragment.OnButtonClickListener mOnButtonClickListenerPF =
+      new PairServerFragment.OnButtonClickListener() {
     @Override
     public void onClickPair(Package aPackage) {
       aPackage.setCommand(Command.PAIR_SERVER_ACCEPT);

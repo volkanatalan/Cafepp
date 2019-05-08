@@ -20,6 +20,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -27,11 +28,12 @@ import android.widget.TextView;
 import net.cafepp.cafepp.R;
 import net.cafepp.cafepp.adapters.AvailableDevicesListViewAdapter;
 import net.cafepp.cafepp.adapters.PairedDevicesAdapter;
+import net.cafepp.cafepp.connection.ClientType;
 import net.cafepp.cafepp.connection.Package;
 import  net.cafepp.cafepp.connection.Command;
 import net.cafepp.cafepp.databases.DeviceDatabase;
 import net.cafepp.cafepp.fragments.ConnectFragment;
-import net.cafepp.cafepp.fragments.PairFragment;
+import net.cafepp.cafepp.fragments.PairClientFragment;
 import net.cafepp.cafepp.fragments.ChangeDeviceNameFragment;
 import net.cafepp.cafepp.objects.Device;
 import net.cafepp.cafepp.services.ClientService;
@@ -52,6 +54,7 @@ public class ConnectActivity extends AppCompatActivity {
   public FrameLayout interlayer;
   private DeviceDatabase deviceDatabase;
   private List<Device> pairedDevices;
+  private PairClientFragment pairClientFragment;
   
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +65,9 @@ public class ConnectActivity extends AppCompatActivity {
     availableDevicesListView = findViewById(R.id.availableDevicesListView);
     interlayer = findViewById(R.id.interlayer);
     Switch switchFindDevices = findViewById(R.id.switchFindDevices);
+    ImageView rediscoverImageView = findViewById(R.id.rediscoverImageView);
+    rediscoverImageView.setOnClickListener(
+        v -> sendCommandToClientService(Command.REFRESH));
     
     configureListViews();
     getMyDevice();
@@ -100,7 +106,7 @@ public class ConnectActivity extends AppCompatActivity {
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     // Inflate the menu; this adds items to the action bar if it is present.
-    getMenuInflater().inflate(R.menu.refresh, menu);
+    getMenuInflater().inflate(R.menu.done, menu);
     return true;
   }
   
@@ -110,7 +116,7 @@ public class ConnectActivity extends AppCompatActivity {
     // automatically handle clicks on the Home/Up button, so long
     // as you specify a parent activity in AndroidManifest.xml.
     int id = item.getItemId();
-    if (id == R.id.action_refresh) {
+    if (id == R.id.action_done) {
       sendCommandToClientService(Command.REFRESH);
       return true;
     }
@@ -142,8 +148,7 @@ public class ConnectActivity extends AppCompatActivity {
     // Configure paired devices list view
     deviceDatabase = new DeviceDatabase(this);
     pairedDevices = deviceDatabase.getDevicesAsClient();
-    pairedDevicesAdapter = new PairedDevicesAdapter();
-    pairedDevicesAdapter.setPairedDevices(pairedDevices);
+    pairedDevicesAdapter = new PairedDevicesAdapter(this, pairedDevices);
     pairedDevicesListView.setOnItemClickListener((parent, view, position, id) -> {
       Device device = pairedDevicesAdapter.getItem(position);
     
@@ -171,12 +176,13 @@ public class ConnectActivity extends AppCompatActivity {
   
       sendPackageToClientService(aPackage);
       
+      pairClientFragment = PairClientFragment.newInstance(
+          getApplicationContext(), aPackage, mOnButtonClickListener);
       FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
       ft.setCustomAnimations(R.anim.enter_from_bottom, R.anim.exit_to_top,
           R.anim.enter_from_bottom, R.anim.exit_to_top);
-      ft.replace(R.id.fragmentContainer, PairFragment.newInstance(
-          aPackage, mOnButtonClickListener), "PairFragment");
-      ft.addToBackStack("PairFragment");
+      ft.replace(R.id.fragmentContainer, pairClientFragment, "PairClientFragment");
+      ft.addToBackStack("PairClientFragment");
       ft.commit();
       
       interlayer.setVisibility(View.VISIBLE);
@@ -220,8 +226,8 @@ public class ConnectActivity extends AppCompatActivity {
     ft.commit();
   };
   
-  private PairFragment.OnButtonClickListener mOnButtonClickListener =
-      new PairFragment.OnButtonClickListener() {
+  private PairClientFragment.OnButtonClickListener mOnButtonClickListener =
+      new PairClientFragment.OnButtonClickListener() {
     @Override
     public void onClickPair(Package aPackage) {
       aPackage.setCommand(Command.PAIR_CLIENT_ACCEPT);
@@ -232,7 +238,7 @@ public class ConnectActivity extends AppCompatActivity {
     }
   
     @Override
-    public void onClickDecline(Package aPackage) {
+    public void onClickCancel(Package aPackage) {
       aPackage.setCommand(Command.PAIR_CLIENT_DECLINE);
       sendPackageToClientService(aPackage);
       
@@ -343,15 +349,21 @@ public class ConnectActivity extends AppCompatActivity {
             availableDevicesAdapter.clear();
             break;
             
+          case PAIR_SERVER_ACCEPT:
+            ClientType clientType = receivingDevice.getClientType();
+            if (pairClientFragment != null) pairClientFragment.setClientType(clientType);
+            break;
+            
           case PAIR_SERVER_DECLINE:
             List<Fragment> fragments = getSupportFragmentManager().getFragments();
             for (int i = 0; i < fragments.size(); i++) {
-              if (fragments.get(i) instanceof PairFragment) {
-                String fragmentMac = ((PairFragment)fragments.get(i)).getPackage().getReceivingDevice().getMacAddress();
+              if (fragments.get(i) instanceof PairClientFragment) {
+                String fragmentMac = ((PairClientFragment)fragments.get(i)).getPackage().getReceivingDevice().getMacAddress();
                 String packageMac = sendingDevice.getMacAddress();
                 if (fragmentMac.equals(packageMac)) {
                   if (i == fragments.size() - 1) {
                     getSupportFragmentManager().popBackStack();
+                    interlayer.setVisibility(View.GONE);
                   } else {
                     fragments.remove(i);
                     break;

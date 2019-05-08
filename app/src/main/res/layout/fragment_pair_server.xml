@@ -11,7 +11,7 @@
     android:clickable="true"
     android:focusable="true"
     android:layout_gravity="center"
-    tools:context=".fragments.PairFragment">
+    tools:context=".fragments.PairServerFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -24,22 +24,24 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/device_name_semicolon"
-            android:textColor="@color/colorPrimary"/>
+            android:textColor="@color/colorPrimary"
+            android:textSize="@dimen/h2" />
 
         <TextView
             android:id="@+id/deviceNameTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/default_margin_bottom"
-            android:text="DeviceName"
+            android:text="@string/device_name"
             android:textColor="@color/black"
-            android:textSize="18sp" />
+            android:textSize="@dimen/h3" />
 
         <TextView
             android:id="@+id/pairKeyLabelTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/pair_key_semicolon"
+            android:textSize="@dimen/h2"
             android:textColor="@color/colorPrimary"/>
 
         <TextView
@@ -50,13 +52,38 @@
             android:text="12345"
             android:textAlignment="center"
             android:textColor="@color/black"
-            android:textSize="@dimen/pair_key_font_size"
+            android:textSize="@dimen/h5"
             android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/clientTypeLabelTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:text="@string/client_type"
+            android:textSize="@dimen/h2"
+            android:textColor="@color/colorPrimary"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/default_margin_bottom"
+            android:background="@drawable/stroke_white_background">
+
+            <Spinner
+                android:id="@+id/clientTypeSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:entries="@array/clientTypes"/>
+        </RelativeLayout>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/does_it_match"/>
+            android:text="@string/does_it_match"
+            android:textSize="@dimen/h1"
+            android:lines="2"
+            android:typeface="monospace" />
     </LinearLayout>
 
     <LinearLayout
@@ -78,8 +105,8 @@
             android:layout_weight="1"
             android:padding="@dimen/default_padding"
             android:text="@string/decline"
-            android:textAlignment="center"
-            android:textSize="16sp"/>
+            android:textSize="@dimen/h2"
+            android:textAlignment="center"/>
 
         <LinearLayout
             android:id="@+id/separatorV"
@@ -89,14 +116,14 @@
             android:orientation="vertical" />
 
         <TextView
-            android:id="@+id/confirm"
+            android:id="@+id/pair"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:padding="@dimen/default_padding"
             android:text="@string/pair"
+            android:textSize="@dimen/h2"
             android:textAlignment="center"
-            android:textSize="16sp"
             android:textStyle="bold" />
     </LinearLayout>
 
