@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.opengl.Visibility;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
@@ -24,7 +23,7 @@ import android.widget.TextView;
 
 import net.cafepp.cafepp.R;
 import net.cafepp.cafepp.adapters.PairedDevicesAdapter;
-import net.cafepp.cafepp.connection.Command;
+import net.cafepp.cafepp.enums.Command;
 import net.cafepp.cafepp.connection.Package;
 import net.cafepp.cafepp.databases.DeviceDatabase;
 import net.cafepp.cafepp.fragments.ChangeDeviceNameFragment;
@@ -33,7 +32,6 @@ import net.cafepp.cafepp.objects.Device;
 import net.cafepp.cafepp.services.ServerService;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 public class DevicesActivity extends AppCompatActivity {
@@ -268,8 +266,8 @@ public class DevicesActivity extends AppCompatActivity {
           pairedDevicesAdapter.add(receivingDevice);
           break;
           
-        case CONNECT:
-          Log.d(TAG, "CONNECT");
+        case CONNECT_CLIENT:
+          Log.d(TAG, "CONNECT_CLIENT");
           if (receivingDevice != null) receivingDevice.setConnected(true);
           pairedDevicesAdapter.setConnected(sendingDevice, true);
           break;

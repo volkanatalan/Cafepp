@@ -1,9 +1,9 @@
 package net.cafepp.cafepp.connection;
 
+import net.cafepp.cafepp.enums.Command;
 import net.cafepp.cafepp.objects.Device;
 
 import java.io.Serializable;
-import java.net.Socket;
 
 /**
  * Provides communication between server, clients, service and activity.

@@ -6,8 +6,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import net.cafepp.cafepp.R;
-import net.cafepp.cafepp.connection.ClientType;
 import net.cafepp.cafepp.objects.Device;
 
 import java.util.ArrayList;

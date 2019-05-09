@@ -18,7 +18,7 @@ import android.util.Log;
 import net.cafepp.cafepp.R;
 import net.cafepp.cafepp.activities.ConnectActivity;
 import net.cafepp.cafepp.connection.ClientThread;
-import net.cafepp.cafepp.connection.Command;
+import net.cafepp.cafepp.enums.Command;
 import net.cafepp.cafepp.connection.CommunicationThread;
 import net.cafepp.cafepp.connection.NSDHelper;
 import net.cafepp.cafepp.connection.Package;
@@ -43,7 +43,7 @@ public class ClientService extends Service {
   private List<Device> foundDevices = new ArrayList<>();
   private static List<PairDevice> pairWaitingDevices = new ArrayList<>();
   private List<Device> pairedDevices;
-  private List<Device> connectedDevices = new ArrayList<>();
+  private Device connectedDevice;
   
   
   public ClientService() {
@@ -205,19 +205,23 @@ public class ClientService extends Service {
         }
         break;
         
-      case CONNECT:
-        Log.d(TAG, "CONNECT");
-        connectedDevices.add(receivingDevice);
+      case CONNECT_SERVER:
+        Log.d(TAG, "CONNECT_SERVER");
+        connectedDevice = pkg.getSendingDevice();
         listenToServer(pkg);
+        sendMessageToActivity(pkg);
+        break;
+        
+      case CONNECT_CLIENT:
+        Log.d(TAG, "CONNECT_CLIENT");
+        connectedDevice = null;
         communicateWithServer(pkg);
         break;
         
       case DISCONNECT_SERVER:
         Log.d(TAG, "DISCONNECT_SERVER");
-        position = getCDListPositionByMac(sendingDevice.getMacAddress());
-        if (position != -1) {
-          // Remove the device from list.
-          connectedDevices.remove(position);
+        if (sendingDevice.getMacAddress().equals(connectedDevice.getMacAddress())) {
+          connectedDevice = null;
           stopListeningToServer();
           sendMessageToActivity(pkg);
         }
@@ -225,10 +229,8 @@ public class ClientService extends Service {
         
       case DISCONNECT_CLIENT:
         Log.d(TAG, "DISCONNECT_CLIENT");
-        position = getCDListPositionByMac(receivingDevice.getMacAddress());
-        if (position != -1) {
-          // Remove the device from list.
-          connectedDevices.remove(position);
+        if (receivingDevice.getMacAddress().equals(connectedDevice.getMacAddress())) {
+          connectedDevice = null;
           stopListeningToServer();
           communicateWithServer(pkg);
         }
@@ -236,10 +238,8 @@ public class ClientService extends Service {
         
       case UNPAIR_SERVER:
         Log.d(TAG, "UNPAIR_SERVER");
-        position = getCDListPositionByMac(sendingDevice.getMacAddress());
-        if (position != -1) {
-          // Remove the device from list.
-          connectedDevices.remove(position);
+        if (sendingDevice.getMacAddress().equals(connectedDevice.getMacAddress())) {
+          connectedDevice = null;
         }
         position = getPDListPositionByMac(sendingDevice.getMacAddress());
         if (position != -1) {
@@ -252,10 +252,8 @@ public class ClientService extends Service {
         
       case UNPAIR_CLIENT:
         Log.d(TAG, "UNPAIR_CLIENT");
-        position = getCDListPositionByMac(receivingDevice.getMacAddress());
-        if (position != -1) {
-          // Remove the device from list.
-          connectedDevices.remove(position);
+        if (sendingDevice.getMacAddress().equals(connectedDevice.getMacAddress())) {
+          connectedDevice = null;
         }
         position = getPDListPositionByMac(receivingDevice.getMacAddress());
         if (position != -1) {
@@ -316,23 +314,6 @@ public class ClientService extends Service {
       }
     } else {
       Log.e(TAG, "pairedDevices list is empty.");
-    }
-    return -1;
-  }
-  
-  private int getCDListPositionByMac(String macAddress) {
-    if (connectedDevices.size() > 0) {
-      for (int i = 0; i < connectedDevices.size(); i++) {
-        String mac = connectedDevices.get(i).getMacAddress();
-        if (mac.equals(macAddress)) {
-          return i;
-          
-        } else {
-          Log.e(TAG, "There is not any device with the same MAC address in connectedDevices list.");
-        }
-      }
-    } else {
-      Log.e(TAG, "connectedDevices list is empty.");
     }
     return -1;
   }

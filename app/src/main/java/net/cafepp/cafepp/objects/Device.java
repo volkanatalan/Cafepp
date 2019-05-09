@@ -3,7 +3,7 @@ package net.cafepp.cafepp.objects;
 import android.net.nsd.NsdServiceInfo;
 import android.util.Log;
 
-import net.cafepp.cafepp.connection.ClientType;
+import net.cafepp.cafepp.enums.ClientType;
 
 import java.io.Serializable;
 import java.net.InetAddress;

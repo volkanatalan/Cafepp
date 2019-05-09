@@ -23,7 +23,7 @@ import android.util.Log;
 
 import net.cafepp.cafepp.R;
 import net.cafepp.cafepp.activities.DevicesActivity;
-import net.cafepp.cafepp.connection.Command;
+import net.cafepp.cafepp.enums.Command;
 import net.cafepp.cafepp.connection.CommunicationThread;
 import net.cafepp.cafepp.connection.Package;
 import net.cafepp.cafepp.connection.ServerThread;
@@ -285,10 +285,14 @@ public class ServerService extends Service {
         sendPackageToDeviceActivity(aPackage);
         break;
         
-      case CONNECT:
-        Log.d(TAG, "CONNECT");
+      case CONNECT_CLIENT:
+        Log.d(TAG, "CONNECT_CLIENT");
         connectedDevices.add(sendingDevice);
         sendPackageToDeviceActivity(aPackage);
+        
+        // Inform client that server has connected.
+        Package informPackage = new Package(Command.CONNECT_SERVER, receivingDevice, sendingDevice);
+        sendPackageToClientWithSocket(informPackage);
         break;
         
       case DISCONNECT_CLIENT:
@@ -384,12 +388,13 @@ public class ServerService extends Service {
         String mac = connectedDevices .get(i).getMacAddress();
         if (mac.equals(macAddress)) {
           return i;
-          
-        } else {
+        }
+        else {
           Log.e(TAG, "There is not any device with the same MAC address in connectedDevices list.");
         }
       }
-    } else {
+    }
+    else {
       Log.e(TAG, "connectedDevices list is empty.");
     }
     return -1;
@@ -400,6 +405,13 @@ public class ServerService extends Service {
     aPackage.getReceivingDevice().setPort(myDevice.getPort());
     
     CommunicationThread communicationThread = new CommunicationThread(aPackage);
+    new Thread(communicationThread).start();
+  }
+  
+  private void sendPackageToClientWithSocket(Package aPackage) {
+    aPackage.getReceivingDevice().setPort(myDevice.getPort());
+    CommunicationThread communicationThread = new CommunicationThread(aPackage);
+    communicationThread.setSocket(aPackage.getSendingDevice().getSocket());
     new Thread(communicationThread).start();
   }
   

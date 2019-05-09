@@ -3,13 +3,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_margin="@dimen/small_padding"
     android:clickable="true"
     android:focusable="true"
     tools:context=".fragments.TablesFragment">
 
     <GridView
+        android:id="@+id/gridView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:stretchMode="spacingWidthUniform"/>
+        android:verticalSpacing="@dimen/small_padding"
+        android:horizontalSpacing="@dimen/small_padding"
+        android:numColumns="@integer/grid_col_num"
+        android:gravity="center"
+        android:stretchMode="columnWidth"/>
 
 </FrameLayout>

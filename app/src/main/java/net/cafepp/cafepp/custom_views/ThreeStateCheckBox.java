@@ -60,17 +60,17 @@ public class ThreeStateCheckBox extends CheckBox {
   
   private void updateBtn()
   {
-    int btnDrawable = R.drawable.checkbox;
+    int btnDrawable = R.drawable.checkbox_empty;
     switch (state)
     {
       case MIX:
-        btnDrawable = R.drawable.checkbox;
+        btnDrawable = R.drawable.checkbox_empty;
         break;
       case UNCHECKED:
-        btnDrawable = R.drawable.checkboxnotselectedknifefork10;
+        btnDrawable = R.drawable.checkboxfalseknifefork10;
         break;
       case CHECKED:
-        btnDrawable = R.drawable.checkboxselected;
+        btnDrawable = R.drawable.checkboxtrueknifesalt;
         break;
     }
     setButtonDrawable(btnDrawable);

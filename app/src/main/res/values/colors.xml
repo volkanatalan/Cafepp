@@ -11,11 +11,12 @@
     <color name="cafepp_blue">#14283a</color>
     <color name="white">#FFFFFF</color>
     <color name="cafepp_green">#009207</color>
+    <color name="light_green">#8EAE3C</color>
     <color name="black">#000000</color>
     <color name="Blue_28AEE1">#28aee1</color>
     <color name="list_item_background">#AACCCCCC</color>
-    <color name="app_color">#8EAE3C</color>
     <color name="bordo">#5e0002</color>
+    <color name="orange">#CC7704</color>
     <color name="cafepp_grey">#262626</color>
     <color name="cafepp_light_grey">#626262</color>
     <color name="cafepp_red">#e00000</color>

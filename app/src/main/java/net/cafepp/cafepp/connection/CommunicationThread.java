@@ -2,6 +2,7 @@ package net.cafepp.cafepp.connection;
 
 import android.util.Log;
 
+import net.cafepp.cafepp.enums.Command;
 import net.cafepp.cafepp.objects.Device;
 
 import java.io.IOException;
@@ -150,6 +151,16 @@ public class CommunicationThread implements Runnable {
           // Listen for the answer.
           mCommand = Command.LISTEN;
           break;
+          
+        case CONNECT_CLIENT:
+          Log.d(TAG, "In CONNECT_CLIENT");
+          // Send connect request to server.
+          aPackage = new Package(mCommand, mSendingDevice, mReceivingDevice);
+          send(aPackage);
+  
+          // Listen for the answer.
+          mCommand = Command.LISTEN;
+          break;
     
         default:
           Log.d(TAG, "In default. Command: " + mCommand);
@@ -195,5 +206,9 @@ public class CommunicationThread implements Runnable {
   
   public void setOnInputListener(OnInputListener listener) {
     onInputListener = listener;
+  }
+  
+  public void setSocket(Socket socket) {
+    mSocket = socket;
   }
 }

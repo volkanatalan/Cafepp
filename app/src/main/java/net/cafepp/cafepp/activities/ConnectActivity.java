@@ -1,5 +1,6 @@
 package net.cafepp.cafepp.activities;
 
+import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -28,9 +29,9 @@ import android.widget.TextView;
 import net.cafepp.cafepp.R;
 import net.cafepp.cafepp.adapters.AvailableDevicesListViewAdapter;
 import net.cafepp.cafepp.adapters.PairedDevicesAdapter;
-import net.cafepp.cafepp.connection.ClientType;
+import net.cafepp.cafepp.enums.ClientType;
 import net.cafepp.cafepp.connection.Package;
-import  net.cafepp.cafepp.connection.Command;
+import net.cafepp.cafepp.enums.Command;
 import net.cafepp.cafepp.databases.DeviceDatabase;
 import net.cafepp.cafepp.fragments.ConnectFragment;
 import net.cafepp.cafepp.fragments.PairClientFragment;
@@ -41,13 +42,14 @@ import net.cafepp.cafepp.services.ClientService;
 import java.util.List;
 import java.util.Random;
 
-
 public class ConnectActivity extends AppCompatActivity {
   
   private final String TAG = "ConnectActivity";
   public TextView deviceNameTextView;
+  private ImageView rediscoverImageView;
   private String deviceName;
   private Device myDevice;
+  private Device connectedDevice;
   private ListView pairedDevicesListView, availableDevicesListView;
   private PairedDevicesAdapter pairedDevicesAdapter;
   private AvailableDevicesListViewAdapter availableDevicesAdapter;
@@ -55,6 +57,8 @@ public class ConnectActivity extends AppCompatActivity {
   private DeviceDatabase deviceDatabase;
   private List<Device> pairedDevices;
   private PairClientFragment pairClientFragment;
+  private Menu mMenu;
+  private boolean allowInflateMenu = false;
   
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -64,8 +68,8 @@ public class ConnectActivity extends AppCompatActivity {
     pairedDevicesListView = findViewById(R.id.pairedDevicesListView);
     availableDevicesListView = findViewById(R.id.availableDevicesListView);
     interlayer = findViewById(R.id.interlayer);
-    Switch switchFindDevices = findViewById(R.id.switchFindDevices);
-    ImageView rediscoverImageView = findViewById(R.id.rediscoverImageView);
+    Switch connectSwitch = findViewById(R.id.connectSwitch);
+    rediscoverImageView = findViewById(R.id.rediscoverImageView);
     rediscoverImageView.setOnClickListener(
         v -> sendCommandToClientService(Command.REFRESH));
     
@@ -73,12 +77,15 @@ public class ConnectActivity extends AppCompatActivity {
     getMyDevice();
   
     boolean isServiceRunning = isServiceRunningInForeground(this, ClientService.class);
-    switchFindDevices.setChecked(isServiceRunning);
+    connectSwitch.setChecked(isServiceRunning);
     Log.d(TAG, "Is Client Service running: " + isServiceRunning);
   
-    switchFindDevices.setOnCheckedChangeListener(onCheckedChangeListener);
+    connectSwitch.setOnCheckedChangeListener(onCheckedChangeListener);
   
     deviceNameTextView.setOnClickListener(deviceNameTextViewOnClickListener);
+    
+    int visibility = isServiceRunning ? View.VISIBLE : View.INVISIBLE;
+    rediscoverImageView.setVisibility(visibility);
   
     // Listen for the commands from Client Service.
     LocalBroadcastManager.getInstance(ConnectActivity.this).registerReceiver(
@@ -88,7 +95,6 @@ public class ConnectActivity extends AppCompatActivity {
   @Override
   protected void onResume() {
     super.onResume();
-  
     deviceName = getDeviceName();
     deviceNameTextView.setText(deviceName);
   }
@@ -105,8 +111,7 @@ public class ConnectActivity extends AppCompatActivity {
   
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
-    // Inflate the menu; this adds items to the action bar if it is present.
-    getMenuInflater().inflate(R.menu.done, menu);
+    mMenu = menu;
     return true;
   }
   
@@ -117,7 +122,9 @@ public class ConnectActivity extends AppCompatActivity {
     // as you specify a parent activity in AndroidManifest.xml.
     int id = item.getItemId();
     if (id == R.id.action_done) {
-      sendCommandToClientService(Command.REFRESH);
+      Intent intent = new Intent(this, ClientActivity.class);
+      intent.putExtra("connectedDevice", connectedDevice);
+      startActivity(intent);
       return true;
     }
     
@@ -132,9 +139,14 @@ public class ConnectActivity extends AppCompatActivity {
     
         // Start ClientService.
         startService(clientServiceIntent);
+  
+        rediscoverImageView.setVisibility(View.VISIBLE);
     
       } else {
         Log.d(TAG, "Switch checked false.");
+  
+        mMenu.clear();
+        rediscoverImageView.setVisibility(View.GONE);
         
         availableDevicesAdapter.clear();
     
@@ -251,8 +263,9 @@ public class ConnectActivity extends AppCompatActivity {
       new ConnectFragment.OnButtonClickListener() {
         @Override
         public void onClickConnect(Device device) {
-          sendPackageToClientService(new Package(Command.CONNECT, myDevice, device));
-          pairedDevicesAdapter.setConnected(device, true);
+          allowInflateMenu = true;
+          
+          sendPackageToClientService(new Package(Command.CONNECT_CLIENT, myDevice, device));
           
           getSupportFragmentManager().popBackStack();
           interlayer.setVisibility(View.GONE);
@@ -260,6 +273,9 @@ public class ConnectActivity extends AppCompatActivity {
         
         @Override
         public void onClickDisconnect(Device device) {
+          mMenu.clear();
+          allowInflateMenu = true;
+          
           sendPackageToClientService(new Package(Command.DISCONNECT_CLIENT, myDevice, device));
           pairedDevicesAdapter.setConnected(device, false);
   
@@ -275,6 +291,9 @@ public class ConnectActivity extends AppCompatActivity {
         
         @Override
         public void onClickUnpair(Device device) {
+          mMenu.clear();
+          allowInflateMenu = true;
+          
           sendPackageToClientService(new Package(Command.UNPAIR_CLIENT, myDevice, device));
           pairedDevicesAdapter.remove(device);
           deviceDatabase.removeAsClient(device.getMacAddress());
@@ -312,9 +331,8 @@ public class ConnectActivity extends AppCompatActivity {
           case FOUND:
             int pos = pairedDevicesAdapter.getPositionByMac(receivingDevice.getMacAddress());
             
-            // If there is not any device with the same MAC address in the
-            // paired devices list and the device allows to pair, add the
-            // found device to available devices.
+            // If there is not any device with the same MAC address in the paired devices
+            // list and the device allows to pair, add the found device to available devices.
             if (pos < 0) {
               if (receivingDevice.isAllowPairReq()) {
                 availableDevicesAdapter.add(receivingDevice);
@@ -330,7 +348,6 @@ public class ConnectActivity extends AppCompatActivity {
                 pairedDevicesAdapter.setFound(receivingDevice, true);
                 Log.d(TAG, "Device added to pairedDevices list: " + receivingDevice.getDeviceName());
               }
-              
               else {
                 // If there is a device with the same MAC address in the paired
                 // devices list but its name is different, change the name.
@@ -380,6 +397,15 @@ public class ConnectActivity extends AppCompatActivity {
             receivingDevice.setFound(true);
             pairedDevicesAdapter.add(receivingDevice);
             break;
+            
+          case CONNECT_SERVER:
+            connectedDevice = sendingDevice;
+            pairedDevicesAdapter.setConnected(sendingDevice, true);
+            if (allowInflateMenu) {
+              allowInflateMenu = false;
+              getMenuInflater().inflate(R.menu.done, mMenu);
+            }
+            break;
         }
       }
     }
@@ -415,6 +441,7 @@ public class ConnectActivity extends AppCompatActivity {
     return Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
   }
   
+  @SuppressLint("HardwareIds")
   private String getMacAddress() {
     WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
     WifiInfo wInfo = wifiManager.getConnectionInfo();

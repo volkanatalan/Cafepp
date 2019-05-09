@@ -2,6 +2,7 @@ package net.cafepp.cafepp.connection;
 
 import android.util.Log;
 
+import net.cafepp.cafepp.enums.Command;
 import net.cafepp.cafepp.objects.Device;
 
 import java.io.IOException;

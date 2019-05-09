@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import net.cafepp.cafepp.R;
+import net.cafepp.cafepp.enums.ClientType;
 import net.cafepp.cafepp.objects.Device;
 
 import java.util.ArrayList;
@@ -146,8 +147,10 @@ public class PairedDevicesAdapter extends BaseAdapter {
   
   public void setConnected(Device device, boolean isConnected) {
     int pos = getPositionByMac(device.getMacAddress());
+    ClientType type = mDevices.get(pos).getClientType();
     if (pos > -1) {
       device.setConnected(isConnected);
+      device.setClientType(type);
       mDevices.set(pos, device);
       notifyDataSetChanged();
     }
@@ -177,10 +180,12 @@ public class PairedDevicesAdapter extends BaseAdapter {
   public void setFound(Device device, boolean isFound) {
     String mac = device.getMacAddress();
     int pos = getPositionByMac(mac);
+    ClientType type = mDevices.get(pos).getClientType();
     
     // If there is a device with the same MAC address in database, set it as found
     if (pos > -1) {
       device.setFound(isFound);
+      device.setClientType(type);
       mDevices.set(pos, device);
       if (!isFound) mDevices.get(pos).setConnected(false);
       notifyDataSetChanged();

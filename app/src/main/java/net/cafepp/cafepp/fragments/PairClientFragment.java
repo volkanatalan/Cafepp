@@ -13,8 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import net.cafepp.cafepp.R;
-import net.cafepp.cafepp.connection.ClientType;
-import net.cafepp.cafepp.connection.Command;
+import net.cafepp.cafepp.enums.ClientType;
 import net.cafepp.cafepp.connection.Package;
 import net.cafepp.cafepp.objects.Device;
 

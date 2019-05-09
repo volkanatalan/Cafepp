@@ -17,30 +17,26 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-
-        <activity android:name=".activities.DevicesActivity"
+        <activity android:name=".activities.ClientActivity"></activity>
+        <activity
+            android:name=".activities.DevicesActivity"
             android:label="@string/devices"
-            android:launchMode="singleTask"/>
-
+            android:launchMode="singleTask" />
         <activity
             android:name=".activities.HomeActivity"
             android:label="@string/title_activity_home"
             android:theme="@style/AppTheme.NoActionBar" />
-
         <activity
             android:name=".activities.ConnectActivity"
             android:label="@string/connect"
-            android:theme="@style/AppTheme"
-            android:launchMode="singleTask" />
-
+            android:launchMode="singleTask"
+            android:theme="@style/AppTheme" />
         <activity android:name=".activities.AddProductActivity" />
-
         <activity
             android:name=".activities.MenuActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_menu"
             android:theme="@style/FullscreenTheme" />
-
         <activity
             android:name=".activities.MainActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar">

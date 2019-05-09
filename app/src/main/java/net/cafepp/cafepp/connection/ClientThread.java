@@ -2,6 +2,7 @@ package net.cafepp.cafepp.connection;
 
 import android.util.Log;
 
+import net.cafepp.cafepp.enums.Command;
 import net.cafepp.cafepp.objects.Device;
 
 import java.io.IOException;
@@ -28,11 +29,11 @@ public class ClientThread implements Runnable {
     Thread thread;
     Command command = Command.LISTEN;
     Device myDevice = mPackage.getSendingDevice();
-    Device receivingDevice = mPackage.getReceivingDevice();
+    Device sendingDevice = mPackage.getSendingDevice();
     
     try {
-      InetAddress ip = InetAddress.getByName(receivingDevice.getIpAddress());
-      int port = receivingDevice.getPort();
+      InetAddress ip = InetAddress.getByName(sendingDevice.getIpAddress());
+      int port = sendingDevice.getPort();
       mSocket = new Socket(ip, port);
     } catch (UnknownHostException e) {
       e.printStackTrace();
