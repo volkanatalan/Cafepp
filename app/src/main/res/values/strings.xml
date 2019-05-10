@@ -102,5 +102,10 @@
     <string name="unpair">Unpair</string>
     <string name="connect_fragment_content">Device Name:\nMAC Address:\nIP Address:</string>
     <string name="refresh_discovery_for_devices">Refresh discovery for devices.</string>
+    <string name="situation">Situation</string>
+    <string name="orders">Orders</string>
+    <string name="menu">Menu</string>
+    <string name="payment">Payment</string>
+    <string name="order_cancellation">Order Cancellation</string>
 
 </resources>

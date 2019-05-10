@@ -44,7 +44,7 @@ public class TablesAdapter extends BaseAdapter {
   }
   
   @Override
-  public Object getItem(int position) {
+  public Table getItem(int position) {
     return mTables.get(position);
   }
   
@@ -76,8 +76,6 @@ public class TablesAdapter extends BaseAdapter {
       // If View Holder is available, reuse it.
       viewHolder = (TablesAdapter.ViewHolder) convertView.getTag();
     }
-  
-    Log.d(TAG, mTables.get(position).getName());
     
     // Change background.
     TableSituation tableSituation = mTables.get(position).getSituation();

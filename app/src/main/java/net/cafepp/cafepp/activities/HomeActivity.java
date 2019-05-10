@@ -20,6 +20,8 @@ import net.cafepp.cafepp.fragments.TablesFragment;
 public class HomeActivity extends AppCompatActivity
     implements NavigationView.OnNavigationItemSelectedListener {
   
+  private TablesFragment mTablesFragment;
+  
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -47,7 +49,14 @@ public class HomeActivity extends AppCompatActivity
     DrawerLayout drawer = findViewById(R.id.drawer_layout);
     if (drawer.isDrawerOpen(GravityCompat.START)) {
       drawer.closeDrawer(GravityCompat.START);
-    } else {
+    }
+    
+    else if (mTablesFragment != null && mTablesFragment.getTableFragment() != null &&
+                 mTablesFragment.getTableFragment().isFABOpen()) {
+      mTablesFragment.getTableFragment().closeFABMenu();
+    }
+    
+    else {
       super.onBackPressed();
     }
   }
@@ -87,8 +96,9 @@ public class HomeActivity extends AppCompatActivity
       
     }
     else if (id == R.id.nav_tables) {
+      mTablesFragment = TablesFragment.newInstance(this);
       FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-      ft.replace(R.id.fragmentContainer, new TablesFragment(), "TablesFragment");
+      ft.replace(R.id.fragmentContainer, mTablesFragment, "TablesFragment");
       ft.addToBackStack("TablesFragment");
       ft.commit();
   
