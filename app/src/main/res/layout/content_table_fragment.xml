@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="@dimen/default_padding"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/situationLabelTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/situation"
+        android:textColor="@color/colorPrimary"
+        android:textSize="@dimen/h2"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/line_thickness"
+        android:layout_marginBottom="5dp"
+        android:background="@color/colorPrimary"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/default_margin_bottom"
+        android:background="@drawable/stroke_white_background">
+
+        <Spinner
+            android:id="@+id/tableSituationSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:entries="@array/table_situation"/>
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/ordersLabelTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/orders"
+        android:textColor="@color/colorPrimary"
+        android:textSize="@dimen/h2"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/line_thickness"
+        android:layout_marginBottom="5dp"
+        android:background="@color/colorPrimary"/>
+
+    <ListView
+        android:id="@+id/ordersListView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+</LinearLayout>

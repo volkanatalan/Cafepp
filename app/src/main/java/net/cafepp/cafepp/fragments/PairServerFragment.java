@@ -74,9 +74,9 @@ public class PairServerFragment extends Fragment {
   
     spinner.setOnItemSelectedListener(selectedListener);
   
-    ArrayAdapter dataAdapter =
-        ArrayAdapter.createFromResource(mContext, R.array.clientTypes, R.layout.list_item_client_type_spinner);
-    dataAdapter.setDropDownViewResource(R.layout.list_item_client_type_spinner);
+    ArrayAdapter dataAdapter = ArrayAdapter.createFromResource(
+        mContext, R.array.clientTypes, R.layout.spinner_item);
+    dataAdapter.setDropDownViewResource(R.layout.spinner_item);
     spinner.setAdapter(dataAdapter);
   
     confirmButton.setOnClickListener(v -> {

@@ -15,6 +15,9 @@ public class Product {
   private ArrayList<String> ingredients;
   private int _id;
   
+  public Product(){
+  }
+  
   public Product(String category, String name, ArrayList<String> images, String price,
                  String description, String calorie, String grammage){
     this.name = name;
@@ -37,8 +40,6 @@ public class Product {
     this.grammage = grammage;
   }
   
-  public Product(){
-  }
   
   public String getName() {
     return name;

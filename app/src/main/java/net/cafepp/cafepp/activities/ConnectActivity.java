@@ -122,7 +122,31 @@ public class ConnectActivity extends AppCompatActivity {
     // as you specify a parent activity in AndroidManifest.xml.
     int id = item.getItemId();
     if (id == R.id.action_done) {
-      Intent intent = new Intent(this, ClientActivity.class);
+      Class<?> cls = null;
+  
+      switch (connectedDevice.getClientType()) {
+        case CASHIER:
+          cls = CashierActivity.class;
+          break;
+          
+        case COOK:
+          cls = CookActivity.class;
+          break;
+          
+        case CUSTOMER:
+          cls = CustomerActivity.class;
+          break;
+          
+        case MANAGER:
+          cls = ManagerActivity.class;
+          break;
+          
+        case WAITER:
+          cls = WaiterActivity.class;
+          break;
+      }
+      
+      Intent intent = new Intent(this, cls);
       intent.putExtra("connectedDevice", connectedDevice);
       startActivity(intent);
       return true;

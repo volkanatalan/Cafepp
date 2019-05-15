@@ -80,7 +80,7 @@ public class SearchProductFragment extends Fragment {
         getFragmentManager().popBackStackImmediate(
             "categories", FragmentManager.POP_BACK_STACK_INCLUSIVE);
       
-        // Open ProductsFragment
+        // Open MenuFragment
         ProductContentFragment productContentFragment = ProductContentFragment.newInstance(productName);
         getActivity().getSupportFragmentManager().beginTransaction()
             .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left,

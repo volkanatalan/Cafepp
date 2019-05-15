@@ -20,6 +20,12 @@
         <item name="waiter">Waiter</item>
     </array>
 
+    <array name="table_situation">
+        <item name="free">FREE</item>
+        <item name="occupied">OCCUPIED</item>
+        <item name="reserved">RESERVED</item>
+    </array>
+
     <string name="cashier">Cashier</string>
     <string name="cook">Cook</string>
     <string name="customer">Customer</string>
@@ -107,5 +113,13 @@
     <string name="menu">Menu</string>
     <string name="payment">Payment</string>
     <string name="order_cancellation">Order Cancellation</string>
+    <string name="qty">Qty.:</string>
+    <string name="title_activity_cook">CookActivity</string>
+    <string name="products">Products</string>
+    <string name="title_activity_manager">ManagerActivity</string>
+    <string name="add_table">Add Table</string>
+    <string name="tables_semicolon">Tables:</string>
+    <string name="location_name">Location Name</string>
+    <string name="table_number">Table number</string>
 
 </resources>

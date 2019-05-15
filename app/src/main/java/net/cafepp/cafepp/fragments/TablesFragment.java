@@ -1,83 +1,75 @@
 package net.cafepp.cafepp.fragments;
 
-import android.app.Activity;
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.GridView;
 
 import net.cafepp.cafepp.R;
-import net.cafepp.cafepp.activities.HomeActivity;
-import net.cafepp.cafepp.adapters.TablesAdapter;
-import net.cafepp.cafepp.enums.TableSituation;
+import net.cafepp.cafepp.adapters.ViewPagerAdapter;
+import net.cafepp.cafepp.databases.TableDatabase;
 import net.cafepp.cafepp.objects.Table;
+import net.cafepp.cafepp.objects.TableLocation;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 public class TablesFragment extends Fragment {
-  
-  private Activity mActivity;
-  private List<Table> tables = new ArrayList<>();
-  private TableFragment mTableFragment;
+  private List<TableLocation> mTableLocations;
+  private List<Table> mTables;
   
   public TablesFragment() {
     // Required empty public constructor
   }
   
-  public static TablesFragment newInstance(Activity activity) {
+  public static TablesFragment newInstance(FragmentManager manager) {
     TablesFragment fragment = new TablesFragment();
-    fragment.setActivity(activity);
+    fragment.setSupportFragmentManager(manager);
     return fragment;
   }
   
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    
-    for (int i = 0; i < 15; i++) {
-      Table table = new Table("Table " + i, Calendar.getInstance().getTime());
-      table.setPrice(i * 10);
-      
-      if (i == 1)
-        table.setSituation(TableSituation.OCCUPIED);
-      else if (i == 2)
-        table.setSituation(TableSituation.RESERVED);
   
-      tables.add(table);
-    }
+    TableDatabase tableDatabase = new TableDatabase(getContext());
+    mTableLocations = tableDatabase.getTableLocations();
+    mTables = tableDatabase.getTables();
   }
   
   @Override
   public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                            Bundle savedInstanceState) {
     View view = inflater.inflate(R.layout.fragment_tables, container, false);
-    TablesAdapter tablesAdapter = new TablesAdapter(getContext(), tables);
+    ViewPager viewPager = view.findViewById(R.id.viewPager);
+    setupViewPager(viewPager);
     
-    GridView gridView = view.findViewById(R.id.gridView);
-    gridView.setOnItemClickListener((parent, view1, position, id) -> {
-      Table table = tablesAdapter.getItem(position);
-      mTableFragment = TableFragment.newInstance(table);
-      FragmentTransaction ft = ((HomeActivity)mActivity).getSupportFragmentManager().beginTransaction();
-      ft.add(R.id.fragmentContainer, mTableFragment, "TableFragment")
-          .addToBackStack("TableFragment")
-          .commit();
-    });
-    gridView.setAdapter(tablesAdapter);
+    TabLayout tabLayout = view.findViewById(R.id.tabLayout);
+    tabLayout.setupWithViewPager(viewPager);
     return view;
   }
   
-  public void setActivity(Activity activity) {
-    mActivity = activity;
+  private void setupViewPager(ViewPager viewPager) {
+    ViewPagerAdapter adapter = new ViewPagerAdapter(getChildFragmentManager());
+    
+    for (TableLocation location : mTableLocations) {
+      List<Table> tables = new ArrayList<>();
+      for (Table table : mTables) {
+        if (table.getLocation().equals(location))
+          tables.add(table);
+      }
+      adapter.addFragment(location.getName(), TableFragment.newInstance(location, tables));
+    }
+    
+    viewPager.setAdapter(adapter);
   }
   
-  public TableFragment getTableFragment() {
-    return mTableFragment;
+  public void setSupportFragmentManager(FragmentManager manager) {
+    FragmentManager mFragmentManager = manager;
   }
 }

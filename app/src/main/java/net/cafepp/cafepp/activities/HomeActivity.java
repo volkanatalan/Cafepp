@@ -1,5 +1,6 @@
 package net.cafepp.cafepp.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -9,23 +10,30 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import net.cafepp.cafepp.R;
+import net.cafepp.cafepp.databases.TableDatabase;
+import net.cafepp.cafepp.fragments.AddTableFragment;
 import net.cafepp.cafepp.fragments.HomeFragment;
 import net.cafepp.cafepp.fragments.TablesFragment;
 
 public class HomeActivity extends AppCompatActivity
     implements NavigationView.OnNavigationItemSelectedListener {
   
+  private Context mContext;
+  private Menu mMenu;
   private TablesFragment mTablesFragment;
   
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_home);
+    mContext = this;
+    
     Toolbar toolbar = findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
     
@@ -51,11 +59,6 @@ public class HomeActivity extends AppCompatActivity
       drawer.closeDrawer(GravityCompat.START);
     }
     
-    else if (mTablesFragment != null && mTablesFragment.getTableFragment() != null &&
-                 mTablesFragment.getTableFragment().isFABOpen()) {
-      mTablesFragment.getTableFragment().closeFABMenu();
-    }
-    
     else {
       super.onBackPressed();
     }
@@ -63,9 +66,8 @@ public class HomeActivity extends AppCompatActivity
   
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
-    // Inflate the menu; this adds items to the action bar if it is present.
-    getMenuInflater().inflate(R.menu.home, menu);
-    return true;
+    mMenu = menu;
+    return super.onCreateOptionsMenu(menu);
   }
   
   @Override
@@ -76,7 +78,12 @@ public class HomeActivity extends AppCompatActivity
     int id = item.getItemId();
     
     //noinspection SimplifiableIfStatement
-    if (id == R.id.action_settings) {
+    if (id == R.id.action_add) {
+      TableDatabase database = new TableDatabase(this);
+      FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+      ft.add(R.id.fragmentContainer, AddTableFragment.newInstance(database.getTableLocations()))
+          .addToBackStack("AddTableFragment")
+          .commit();
       return true;
     }
     
@@ -96,11 +103,15 @@ public class HomeActivity extends AppCompatActivity
       
     }
     else if (id == R.id.nav_tables) {
-      mTablesFragment = TablesFragment.newInstance(this);
+      // Open fragment.
+      mTablesFragment = TablesFragment.newInstance(getSupportFragmentManager());
       FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
       ft.replace(R.id.fragmentContainer, mTablesFragment, "TablesFragment");
       ft.addToBackStack("TablesFragment");
       ft.commit();
+      
+      // Inflate menu.
+      getMenuInflater().inflate(R.menu.add, mMenu);
   
     }
     else if (id == R.id.nav_stock) {

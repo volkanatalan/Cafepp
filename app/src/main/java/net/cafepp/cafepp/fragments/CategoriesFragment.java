@@ -68,12 +68,12 @@ public class CategoriesFragment extends Fragment {
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
           String categoryName = categoryListAdapter.getItem(position).getCategoryName();
       
-          // Open ProductsFragment
-          ProductsFragment productsFragment = ProductsFragment.newInstance(categoryName);
+          // Open MenuFragment
+          MenuFragment menuFragment = MenuFragment.newInstance(categoryName);
           getActivity().getSupportFragmentManager().beginTransaction()
               .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left,
                   R.anim.enter_from_right, R.anim.exit_to_left)
-              .replace(R.id.fragmentContainer, productsFragment, "productsFragment")
+              .replace(R.id.fragmentContainer, menuFragment, "menuFragment")
               .addToBackStack("categories")
               .commit();
         }

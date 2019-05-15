@@ -18,6 +18,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class TablesAdapter extends BaseAdapter {
   
@@ -56,10 +57,10 @@ public class TablesAdapter extends BaseAdapter {
   @SuppressLint("SetTextI18n")
   @Override
   public View getView(int position, View convertView, ViewGroup parent) {
-    TablesAdapter.ViewHolder viewHolder;
+    ViewHolder viewHolder;
   
     if (convertView == null) {
-      viewHolder = new TablesAdapter.ViewHolder();
+      viewHolder = new ViewHolder();
       convertView = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.grid_item_tables, parent, false);
   
@@ -74,32 +75,43 @@ public class TablesAdapter extends BaseAdapter {
     
     } else {
       // If View Holder is available, reuse it.
-      viewHolder = (TablesAdapter.ViewHolder) convertView.getTag();
+      viewHolder = (ViewHolder) convertView.getTag();
     }
     
-    // Change background.
     TableSituation tableSituation = mTables.get(position).getSituation();
     int backgroundDrawable = R.drawable.table_bg_free;
+    String tableName = "Table " + mTables.get(position).getName();
+    float price = mTables.get(position).getPrice();
+    String priceText = price + " ₺";
+    String dateString = "";
+    Date date = mTables.get(position).getOpeningDate();
+    if (date != null) {
+      DateFormat dateFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+      dateString = dateFormat.format(date);
+    }
+    
     
     switch (tableSituation) {
+      case FREE:
+        dateString = "";
+        priceText = "";
+        break;
+        
       case OCCUPIED:
         backgroundDrawable = R.drawable.table_bg_occupied;
         break;
         
       case RESERVED:
         backgroundDrawable = R.drawable.table_bg_reserved;
+        dateString = "";
         break;
     }
     
+    
     viewHolder.backgroundLinearLeyout.setBackgroundResource(backgroundDrawable);
-  
-    viewHolder.tableNameTextView.setText(mTables.get(position).getName());
-    viewHolder.situationTextView.setText(mTables.get(position).getSituation().toString());
-    viewHolder.priceTextView.setText(mTables.get(position).getPrice()+" ₺");
-  
-    DateFormat dateFormat = new SimpleDateFormat("HH:mm");
-    Date date = mTables.get(position).getOpeningDate();
-    String dateString = dateFormat.format(date);
+    viewHolder.tableNameTextView.setText(tableName);
+    viewHolder.situationTextView.setText(tableSituation.toString());
+    viewHolder.priceTextView.setText(priceText);
     viewHolder.openingTimeTextView.setText(dateString);
     return convertView;
   }
