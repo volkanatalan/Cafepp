@@ -2,7 +2,6 @@ package net.cafepp.cafepp.adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,22 +12,41 @@ import android.widget.TextView;
 import net.cafepp.cafepp.R;
 import net.cafepp.cafepp.enums.TableSituation;
 import net.cafepp.cafepp.objects.Table;
+import net.cafepp.cafepp.objects.TableLocation;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class TablesAdapter extends BaseAdapter {
+public class TablesGridAdapter extends BaseAdapter {
   
-  private final String TAG = "TablesAdapter";
+  private final String TAG = "TablesGridAdapter";
   private final Context mContext;
-  private List<Table> mTables;
+  private List<Table> mNotFreeTables;
+  private List<Table> mExtraTables = new ArrayList<>();
+  private List<Table> mTables = new ArrayList<>();
+  private int mTotalTable;
+  private int mCount;
+  private int mTableNumber = 0;
   
-  public TablesAdapter(Context context, List<Table> tables) {
+  public TablesGridAdapter(Context context, int totalTable, List<Table> notFreeTables) {
     mContext = context;
-    mTables = tables;
+    mNotFreeTables = notFreeTables;
+  
+    
+    // Count extra tables.
+    mTotalTable = totalTable;
+    for (Table table : mNotFreeTables) {
+      if (table.getNumber() > mTotalTable) {
+        mExtraTables.add(table);
+      }
+    }
+    
+    // Set count.
+    mCount = mTotalTable + mExtraTables.size();
   }
   
   private static class ViewHolder{
@@ -41,12 +59,12 @@ public class TablesAdapter extends BaseAdapter {
   
   @Override
   public int getCount() {
-    return mTables.size();
+    return mCount;
   }
   
   @Override
   public Table getItem(int position) {
-    return mTables.get(position);
+    return mNotFreeTables.get(position);
   }
   
   @Override
@@ -77,19 +95,41 @@ public class TablesAdapter extends BaseAdapter {
       // If View Holder is available, reuse it.
       viewHolder = (ViewHolder) convertView.getTag();
     }
-    
-    TableSituation tableSituation = mTables.get(position).getSituation();
+  
+  
+    TableSituation tableSituation = TableSituation.FREE;
     int backgroundDrawable = R.drawable.table_bg_free;
-    String tableName = "Table " + mTables.get(position).getName();
-    float price = mTables.get(position).getPrice();
-    String priceText = price + " ₺";
+    float price = 0;
+    Date date = null;
     String dateString = "";
-    Date date = mTables.get(position).getOpeningDate();
+    mTableNumber++;
+  
+    if (position < mTotalTable) {
+      for (Table table : mNotFreeTables) {
+        if (table.getNumber() == position + 1) {
+          tableSituation = table.getSituation();
+          price = table.getPrice();
+          date = table.getOpeningDate();
+        }
+      }
+    }
+    
+    // If there is an extra table.
+    else {
+      Table table = mExtraTables.get(position - mTotalTable);
+      mTableNumber = table.getNumber();
+      tableSituation = table.getSituation();
+      price = table.getPrice();
+      date = table.getOpeningDate();
+    }
+    
+    
+    String tableName = "Table " + mTableNumber;
+    String priceText = price + " $";
     if (date != null) {
       DateFormat dateFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
       dateString = dateFormat.format(date);
     }
-    
     
     switch (tableSituation) {
       case FREE:
@@ -114,5 +154,9 @@ public class TablesAdapter extends BaseAdapter {
     viewHolder.priceTextView.setText(priceText);
     viewHolder.openingTimeTextView.setText(dateString);
     return convertView;
+  }
+  
+  public void setTotalTable(int totalTable) {
+    mTotalTable = totalTable;
   }
 }
