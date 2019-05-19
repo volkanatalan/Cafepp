@@ -52,9 +52,9 @@ public class CookActivity extends AppCompatActivity
     TabLayout tabLayout = findViewById(R.id.tabLayout);
     tabLayout.setupWithViewPager(viewPager);
   
-    FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+    /*FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
     ft.replace(R.id.fragmentContainer, TablesFragment.newInstance(getSupportFragmentManager()))
-        .commit();
+        .commit();*/
   }
   
   @Override

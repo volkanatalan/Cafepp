@@ -11,7 +11,7 @@
     android:clickable="true"
     android:focusable="true"
     android:background="@drawable/stroke_white_background"
-    tools:context=".fragments.AddTableLocationFragment">
+    tools:context=".fragments.NumberPickerFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -19,43 +19,22 @@
         android:padding="@dimen/default_padding"
         android:orientation="vertical">
 
-        <android.support.design.widget.TextInputLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/default_margin_bottom">
+            android:layout_marginBottom="@dimen/default_margin_bottom"
+            android:text="@string/pick_table_number"
+            android:textSize="@dimen/h3"
+            android:textColor="@color/black"/>
 
-            <EditText
-                android:id="@+id/locationNameEditText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:hint="@string/location_name"
-                android:inputType="textCapSentences"
-                android:selectAllOnFocus="true"
-                android:singleLine="true"
-                android:textSize="@dimen/h3" />
-
-        </android.support.design.widget.TextInputLayout>
-
-        <android.support.design.widget.TextInputLayout
-            android:layout_width="match_parent"
+        <NumberPicker
+            android:id="@+id/numberPicker"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/default_margin_bottom">
+            android:layout_marginBottom="@dimen/default_margin_bottom"
+            android:layout_gravity="center_horizontal"/>
 
-            <EditText
-                android:id="@+id/tableNumberEditText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:hint="@string/table_number"
-                android:inputType="numberDecimal"
-                android:selectAllOnFocus="true"
-                android:singleLine="true"
-                android:textSize="@dimen/h3" />
-
-        </android.support.design.widget.TextInputLayout>
     </LinearLayout>
-
 
     <LinearLayout
         android:layout_width="match_parent"

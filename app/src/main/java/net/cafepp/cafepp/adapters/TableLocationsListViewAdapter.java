@@ -5,8 +5,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import net.cafepp.cafepp.R;
@@ -18,14 +18,16 @@ public class TableLocationsListViewAdapter extends BaseAdapter {
   
   private List<TableLocation> tableLocations;
   
-  public TableLocationsListViewAdapter(List<TableLocation> locations) {
+  public TableLocationsListViewAdapter(List<TableLocation> locations, OnTableNumberClickedListener listener) {
     tableLocations = locations;
+    onTableNumberClickedListener = listener;
   }
   
   
   private static class ViewHolder{
+    LinearLayout tableNumberLinearLayout;
     TextView locationName;
-    EditText tableNumberEditText;
+    TextView tableNumberTextView;
     ImageView minusImageView, plusImageView;
   }
   
@@ -53,8 +55,9 @@ public class TableLocationsListViewAdapter extends BaseAdapter {
       viewHolder = new ViewHolder();
       convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_table_locations, null);
     
+      viewHolder.tableNumberLinearLayout = convertView.findViewById(R.id.tableNumber);
       viewHolder.locationName = convertView.findViewById(R.id.locationName);
-      viewHolder.tableNumberEditText = convertView.findViewById(R.id.tableNumberEditText);
+      viewHolder.tableNumberTextView = convertView.findViewById(R.id.tableNumberTextView);
       viewHolder.minusImageView = convertView.findViewById(R.id.minusImageView);
       viewHolder.plusImageView = convertView.findViewById(R.id.plusImageView);
     
@@ -67,26 +70,16 @@ public class TableLocationsListViewAdapter extends BaseAdapter {
       viewHolder = (ViewHolder) convertView.getTag();
     }
     
-    String locationName = tableLocations.get(position).getName();
-    int tableNumber = tableLocations.get(position).getNumber();
+    TableLocation tableLocation = tableLocations.get(position);
+    String locationName = tableLocation.getName();
+    int tableNumber = tableLocation.getTotalTable();
     
     viewHolder.locationName.setText(locationName);
-    viewHolder.tableNumberEditText.setText(tableNumber + "");
-  
-    viewHolder.plusImageView.setOnClickListener((v) -> {
-      int number = tableLocations.get(position).getNumber();
-      tableLocations.get(position).setNumber(++number);
-  
-      viewHolder.tableNumberEditText.setText(number +"");
-    });
-  
-    viewHolder.minusImageView.setOnClickListener((v) -> {
-      int number = tableLocations.get(position).getNumber();
-      number--;
-      
-      if (number >= 0) {
-        tableLocations.get(position).setNumber(number);
-        viewHolder.tableNumberEditText.setText(number+"");
+    viewHolder.tableNumberTextView.setText(tableNumber + "");
+    
+    viewHolder.tableNumberLinearLayout.setOnClickListener((v) -> {
+      if (onTableNumberClickedListener != null) {
+        onTableNumberClickedListener.onClick(tableLocation, viewHolder.tableNumberTextView);
       }
     });
     
@@ -96,5 +89,20 @@ public class TableLocationsListViewAdapter extends BaseAdapter {
   public void add(TableLocation location) {
     tableLocations.add(location);
     notifyDataSetChanged();
+  }
+  
+  public void set(int index, TableLocation location) {
+    tableLocations.set(index, location);
+    notifyDataSetChanged();
+  }
+  
+  private OnTableNumberClickedListener onTableNumberClickedListener;
+  
+  public interface OnTableNumberClickedListener {
+    void onClick(TableLocation location, TextView textView);
+  }
+  
+  public void setOnTableNumberClickedListener(OnTableNumberClickedListener listener) {
+    onTableNumberClickedListener = listener;
   }
 }

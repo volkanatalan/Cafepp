@@ -10,14 +10,11 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import net.cafepp.cafepp.R;
-import net.cafepp.cafepp.databases.TableDatabase;
-import net.cafepp.cafepp.fragments.AddTableFragment;
 import net.cafepp.cafepp.fragments.HomeFragment;
 import net.cafepp.cafepp.fragments.TablesFragment;
 
@@ -25,7 +22,6 @@ public class HomeActivity extends AppCompatActivity
     implements NavigationView.OnNavigationItemSelectedListener {
   
   private Context mContext;
-  private Menu mMenu;
   private TablesFragment mTablesFragment;
   
   @Override
@@ -65,32 +61,6 @@ public class HomeActivity extends AppCompatActivity
   }
   
   @Override
-  public boolean onCreateOptionsMenu(Menu menu) {
-    mMenu = menu;
-    return super.onCreateOptionsMenu(menu);
-  }
-  
-  @Override
-  public boolean onOptionsItemSelected(MenuItem item) {
-    // Handle action bar item clicks here. The action bar will
-    // automatically handle clicks on the Home/Up button, so long
-    // as you specify a parent activity in AndroidManifest.xml.
-    int id = item.getItemId();
-    
-    //noinspection SimplifiableIfStatement
-    if (id == R.id.action_add) {
-      TableDatabase database = new TableDatabase(this);
-      FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-      ft.add(R.id.fragmentContainer, AddTableFragment.newInstance(database.getTableLocations()))
-          .addToBackStack("AddTableFragment")
-          .commit();
-      return true;
-    }
-    
-    return super.onOptionsItemSelected(item);
-  }
-  
-  @Override
   public boolean onNavigationItemSelected(@NonNull MenuItem item) {
     // Handle navigation view item clicks here.
     int id = item.getItemId();
@@ -104,14 +74,10 @@ public class HomeActivity extends AppCompatActivity
     }
     else if (id == R.id.nav_tables) {
       // Open fragment.
-      mTablesFragment = TablesFragment.newInstance(getSupportFragmentManager());
       FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-      ft.replace(R.id.fragmentContainer, mTablesFragment, "TablesFragment");
+      ft.replace(R.id.fragmentContainer, new TablesFragment(), "TablesFragment");
       ft.addToBackStack("TablesFragment");
       ft.commit();
-      
-      // Inflate menu.
-      getMenuInflater().inflate(R.menu.add, mMenu);
   
     }
     else if (id == R.id.nav_stock) {

@@ -1,8 +1,12 @@
 package net.cafepp.cafepp.adapters;
 
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.view.ViewGroup;
+
+import net.cafepp.cafepp.fragments.TableFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +17,18 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
   
   public ViewPagerAdapter(FragmentManager manager) {
     super(manager);
+  }
+  
+  
+  @NonNull
+  @Override
+  public Object instantiateItem(@NonNull ViewGroup container, int position) {
+    Object fragment = super.instantiateItem(container, position);
+    if (fragment instanceof TableFragment) {
+      TableFragment tableFragment = (TableFragment) fragment;
+      tableFragment.update(((TableFragment)mFragmentList.get(position)).getTableLocation());
+    }
+    return fragment;
   }
   
   @Override
@@ -33,5 +49,10 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
   @Override
   public CharSequence getPageTitle(int position) {
     return mFragmentTitleList.get(position);
+  }
+  
+  public void clear() {
+    mFragmentList.clear();
+    mFragmentTitleList.clear();
   }
 }

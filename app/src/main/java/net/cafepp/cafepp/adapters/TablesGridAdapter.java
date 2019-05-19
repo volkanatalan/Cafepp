@@ -1,7 +1,6 @@
 package net.cafepp.cafepp.adapters;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,13 +9,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import net.cafepp.cafepp.R;
-import net.cafepp.cafepp.enums.TableSituation;
+import net.cafepp.cafepp.enums.TableStatus;
 import net.cafepp.cafepp.objects.Table;
-import net.cafepp.cafepp.objects.TableLocation;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -24,33 +21,14 @@ import java.util.Locale;
 public class TablesGridAdapter extends BaseAdapter {
   
   private final String TAG = "TablesGridAdapter";
-  private final Context mContext;
-  private List<Table> mNotFreeTables;
-  private List<Table> mExtraTables = new ArrayList<>();
-  private List<Table> mTables = new ArrayList<>();
-  private int mTotalTable;
-  private int mCount;
-  private int mTableNumber = 0;
+  private List<Table> mTables;
   
-  public TablesGridAdapter(Context context, int totalTable, List<Table> notFreeTables) {
-    mContext = context;
-    mNotFreeTables = notFreeTables;
-  
-    
-    // Count extra tables.
-    mTotalTable = totalTable;
-    for (Table table : mNotFreeTables) {
-      if (table.getNumber() > mTotalTable) {
-        mExtraTables.add(table);
-      }
-    }
-    
-    // Set count.
-    mCount = mTotalTable + mExtraTables.size();
+  public TablesGridAdapter(List<Table> tables) {
+    mTables = tables;
   }
   
   private static class ViewHolder{
-    LinearLayout backgroundLinearLeyout;
+    LinearLayout backgroundLinearLayout;
     TextView tableNameTextView;
     TextView openingTimeTextView;
     TextView situationTextView;
@@ -59,12 +37,12 @@ public class TablesGridAdapter extends BaseAdapter {
   
   @Override
   public int getCount() {
-    return mCount;
+    return mTables.size();
   }
   
   @Override
   public Table getItem(int position) {
-    return mNotFreeTables.get(position);
+    return mTables.get(position);
   }
   
   @Override
@@ -82,7 +60,7 @@ public class TablesGridAdapter extends BaseAdapter {
       convertView = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.grid_item_tables, parent, false);
   
-      viewHolder.backgroundLinearLeyout = convertView.findViewById(R.id.background);
+      viewHolder.backgroundLinearLayout = convertView.findViewById(R.id.background);
       viewHolder.tableNameTextView = convertView.findViewById(R.id.tableName);
       viewHolder.openingTimeTextView = convertView.findViewById(R.id.openingTime);
       viewHolder.situationTextView = convertView.findViewById(R.id.situation);
@@ -97,41 +75,21 @@ public class TablesGridAdapter extends BaseAdapter {
     }
   
   
-    TableSituation tableSituation = TableSituation.FREE;
-    int backgroundDrawable = R.drawable.table_bg_free;
+    Table table = mTables.get(position);
+    int tableNumber = table.getNumber();
+    String tableName = "Table " + tableNumber;
+    TableStatus tableStatus = table.getStatus();
     float price = 0;
-    Date date = null;
-    String dateString = "";
-    mTableNumber++;
-  
-    if (position < mTotalTable) {
-      for (Table table : mNotFreeTables) {
-        if (table.getNumber() == position + 1) {
-          tableSituation = table.getSituation();
-          price = table.getPrice();
-          date = table.getOpeningDate();
-        }
-      }
-    }
-    
-    // If there is an extra table.
-    else {
-      Table table = mExtraTables.get(position - mTotalTable);
-      mTableNumber = table.getNumber();
-      tableSituation = table.getSituation();
-      price = table.getPrice();
-      date = table.getOpeningDate();
-    }
-    
-    
-    String tableName = "Table " + mTableNumber;
     String priceText = price + " $";
+    Date date = table.getOpeningDate();
+    String dateString = "";
     if (date != null) {
       DateFormat dateFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
       dateString = dateFormat.format(date);
     }
+    int backgroundDrawable = R.drawable.table_bg_free;
     
-    switch (tableSituation) {
+    switch (tableStatus) {
       case FREE:
         dateString = "";
         priceText = "";
@@ -143,20 +101,15 @@ public class TablesGridAdapter extends BaseAdapter {
         
       case RESERVED:
         backgroundDrawable = R.drawable.table_bg_reserved;
-        dateString = "";
         break;
     }
     
     
-    viewHolder.backgroundLinearLeyout.setBackgroundResource(backgroundDrawable);
+    viewHolder.backgroundLinearLayout.setBackgroundResource(backgroundDrawable);
     viewHolder.tableNameTextView.setText(tableName);
-    viewHolder.situationTextView.setText(tableSituation.toString());
+    viewHolder.situationTextView.setText(tableStatus.toString());
     viewHolder.priceTextView.setText(priceText);
     viewHolder.openingTimeTextView.setText(dateString);
     return convertView;
-  }
-  
-  public void setTotalTable(int totalTable) {
-    mTotalTable = totalTable;
   }
 }

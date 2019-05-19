@@ -1,8 +1,9 @@
 package net.cafepp.cafepp.objects;
 
 public class TableLocation {
+  int id;
   private String name;
-  private int number = 0;
+  private int totalTable = 0;
   
   public TableLocation() {
     // Empty constructor
@@ -12,11 +13,19 @@ public class TableLocation {
     this.name = name;
   }
   
-  public TableLocation(String name, int number) {
+  public TableLocation(String name, int totalTable) {
     this.name = name;
-    this.number = number;
+    this.totalTable = totalTable;
   }
   
+  
+  public int getId() {
+    return id;
+  }
+  
+  public void setId(int id) {
+    this.id = id;
+  }
   
   public String getName() {
     return name;
@@ -26,11 +35,11 @@ public class TableLocation {
     this.name = name;
   }
   
-  public int getNumber() {
-    return number;
+  public int getTotalTable() {
+    return totalTable;
   }
   
-  public void setNumber(int number) {
-    this.number = number;
+  public void setTotalTable(int totalTable) {
+    this.totalTable = totalTable;
   }
 }

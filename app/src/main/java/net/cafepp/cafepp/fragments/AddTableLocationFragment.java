@@ -1,5 +1,6 @@
 package net.cafepp.cafepp.fragments;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -14,6 +15,8 @@ import net.cafepp.cafepp.R;
 import net.cafepp.cafepp.objects.TableLocation;
 
 public class AddTableLocationFragment extends Fragment {
+  
+  private TableLocation mTableLocation;
   
   public AddTableLocationFragment() {
     // Required empty public constructor
@@ -30,6 +33,7 @@ public class AddTableLocationFragment extends Fragment {
     super.onCreate(savedInstanceState);
   }
   
+  @SuppressLint("SetTextI18n")
   @Override
   public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                            Bundle savedInstanceState) {
@@ -39,6 +43,11 @@ public class AddTableLocationFragment extends Fragment {
     EditText tableNumberEditText = view.findViewById(R.id.tableNumberEditText);
     TextView confirmTextView = view.findViewById(R.id.confirmTextView);
     TextView cancelTextView = view.findViewById(R.id.cancelTextView);
+  
+    if (mTableLocation != null) {
+      nameEditText.setText(mTableLocation.getName());
+      tableNumberEditText.setText(mTableLocation.getTotalTable() + "");
+    }
     
     confirmTextView.setOnClickListener((v) ->{
       String name = nameEditText.getText().toString();
@@ -50,7 +59,12 @@ public class AddTableLocationFragment extends Fragment {
       }
       
       else if (onButtonClickListener != null) {
-        onButtonClickListener.onClickConfirm(new TableLocation(name, tableNumber));
+        
+        TableLocation tableLocation = new TableLocation(name, tableNumber);
+        if (mTableLocation != null)
+          tableLocation.setId(mTableLocation.getId());
+        
+        onButtonClickListener.onClickConfirm(tableLocation);
       }
     });
     
@@ -71,5 +85,9 @@ public class AddTableLocationFragment extends Fragment {
   public interface OnButtonClickListener {
     void onClickConfirm(TableLocation location);
     void onClickCancel();
+  }
+  
+  public void setTableLocation(TableLocation location) {
+    mTableLocation = location;
   }
 }

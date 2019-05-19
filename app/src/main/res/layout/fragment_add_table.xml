@@ -11,27 +11,12 @@
     android:focusable="true"
     tools:context=".fragments.AddTableFragment">
 
-    <LinearLayout
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="bottom">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Table Locations"
-            android:textSize="@dimen/h1"
-            android:textColor="@color/colorPrimary"/>
-
-        <ImageView
-            android:id="@+id/addLocationImageView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:srcCompat="@drawable/add_outline_primary_color" />
-
-    </LinearLayout>
+        android:text="@string/table_locations"
+        android:textSize="@dimen/h1"
+        android:textColor="@color/colorPrimary"/>
 
     <RelativeLayout
         android:layout_width="match_parent"

@@ -2,29 +2,29 @@ package net.cafepp.cafepp.objects;
 
 import android.util.Log;
 
-import net.cafepp.cafepp.enums.TableSituation;
+import net.cafepp.cafepp.enums.TableStatus;
 
 import java.util.Date;
 
 public class Table {
   private int id;
-  private String name;
+  private int number;
   private String location;
   private Date openingDate;
   private float price = 0;
-  private TableSituation situation = TableSituation.FREE;
+  private TableStatus status = TableStatus.FREE;
   
   public Table() {
     // Empty constructor
   }
   
-  public Table(String name, String location) {
-    this.name = name;
+  public Table(int number, String location) {
+    this.number = number;
     this.location = location;
   }
   
-  public Table(String name, Date openingDate) {
-    this.name = name;
+  public Table(int number, Date openingDate) {
+    this.number = number;
     this.openingDate = openingDate;
   }
   
@@ -37,12 +37,12 @@ public class Table {
     this.id = id;
   }
   
-  public String getName() {
-    return name;
+  public int getNumber() {
+    return number;
   }
   
-  public void setName(String name) {
-    this.name = name;
+  public void setNumber(int number) {
+    this.number = number;
   }
   
   public String getLocation() {
@@ -69,27 +69,27 @@ public class Table {
     this.price = price;
   }
   
-  public TableSituation getSituation() {
-    return situation;
+  public TableStatus getStatus() {
+    return status;
   }
   
-  public void setSituation(TableSituation situation) {
-    this.situation = situation;
+  public void setStatus(TableStatus status) {
+    this.status = status;
   }
   
   public void setSituation(String situation) {
     switch (situation) {
       case "FREE":
-        this.situation = TableSituation.FREE;
+        this.status = TableStatus.FREE;
         break;
       case "OCCUPIED":
-        this.situation = TableSituation.OCCUPIED;
+        this.status = TableStatus.OCCUPIED;
         break;
       case "RESERVED":
-        this.situation = TableSituation.RESERVED;
+        this.status = TableStatus.RESERVED;
         break;
       default:
-        Log.e("Table", "Unknown table situation.");
+        Log.e("Table", "Unknown table status.");
     }
   }
 }

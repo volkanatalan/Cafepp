@@ -1,5 +1,5 @@
 package net.cafepp.cafepp.enums;
 
-public enum TableSituation {
+public enum TableStatus {
   FREE, OCCUPIED, RESERVED
 }

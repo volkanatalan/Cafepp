@@ -121,5 +121,8 @@
     <string name="tables_semicolon">Tables:</string>
     <string name="location_name">Location Name</string>
     <string name="table_number">Table number</string>
+    <string name="table_locations">Table Locations</string>
+    <string name="there_is_already_a_location_with_the_same_name">There is already a location with the same name.</string>
+    <string name="pick_table_number">Pick table number</string>
 
 </resources>
