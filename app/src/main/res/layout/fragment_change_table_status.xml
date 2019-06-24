@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:minWidth="450dp"
+    android:layout_height="wrap_content"
+    android:layout_margin="20dp"
+    android:paddingStart="@dimen/mini_fragment_side_line_thickness"
+    android:paddingEnd="@dimen/mini_fragment_side_line_thickness"
+    android:paddingBottom="@dimen/mini_fragment_side_line_thickness"
+    android:orientation="vertical"
+    android:layout_gravity="center"
+    android:gravity="center_vertical"
+    android:clickable="true"
+    android:focusable="true"
+    android:background="@drawable/mini_fragment_header"
+    tools:context=".fragments.ChangeTableStatusFragment">
+
+    <TextView
+        android:id="@+id/headerTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/change_table_status"
+        android:padding="@dimen/default_padding"
+        android:textSize="@dimen/h2"
+        android:textColor="@color/white"
+        android:textStyle="bold"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/default_padding"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/stroke_white_background">
+
+            <GridLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:columnCount="2"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/free"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:orientation="vertical"
+                    android:layout_margin="@dimen/small_padding"
+                    android:padding="@dimen/small_padding"
+                    android:gravity="center"
+                    android:background="@drawable/table_bg_free">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/free_allcaps"
+                        android:textAlignment="center"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/h3" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/reserved"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:orientation="vertical"
+                    android:layout_margin="@dimen/small_padding"
+                    android:padding="@dimen/small_padding"
+                    android:gravity="center"
+                    android:background="@drawable/table_bg_reserved">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/reserved_allcaps"
+                        android:textAlignment="center"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/h3" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/occupied"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:orientation="vertical"
+                    android:layout_margin="@dimen/small_padding"
+                    android:padding="@dimen/small_padding"
+                    android:gravity="center"
+                    android:background="@drawable/table_bg_occupied">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/occupied"
+                        android:textAlignment="center"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/h3" />
+                </LinearLayout>
+            </GridLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

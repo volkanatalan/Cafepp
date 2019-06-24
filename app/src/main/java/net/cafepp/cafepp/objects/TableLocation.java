@@ -1,7 +1,7 @@
 package net.cafepp.cafepp.objects;
 
 public class TableLocation {
-  int id;
+  private int id;
   private String name;
   private int totalTable = 0;
   

@@ -19,10 +19,10 @@ public class NumberPickerFragment extends Fragment {
     // Required empty public constructor
   }
   
-  public static NumberPickerFragment newInstance(int currentNumber, OnNumberPickedListener listener) {
+  public static NumberPickerFragment newInstance(int currentNumber, OnButtonClickListener listener) {
     NumberPickerFragment fragment = new NumberPickerFragment();
     fragment.setCurrentNumber(currentNumber);
-    fragment.setOnNumberPickedListener(listener);
+    fragment.setOnButtonClickListener(listener);
     return fragment;
   }
   
@@ -46,24 +46,26 @@ public class NumberPickerFragment extends Fragment {
     
     cancelTextView.setOnClickListener((v) ->{
       getFragmentManager().popBackStack();
+      if (onButtonClickListener != null) onButtonClickListener.onClickCancel();
     });
     
     confirmTextView.setOnClickListener((v) -> {
       int number = numberPicker.getValue();
-      onNumberPickedListener.onNumberPicked(number);
       getFragmentManager().popBackStack();
+      if (onButtonClickListener != null) onButtonClickListener.onClickConfirm(number);
     });
     return view;
   }
   
-  private OnNumberPickedListener onNumberPickedListener;
+  private OnButtonClickListener onButtonClickListener;
   
-  public interface OnNumberPickedListener {
-    void onNumberPicked(int number);
+  public interface OnButtonClickListener {
+    void onClickConfirm(int number);
+    void onClickCancel();
   }
   
-  public void setOnNumberPickedListener(OnNumberPickedListener listener) {
-    onNumberPickedListener = listener;
+  public void setOnButtonClickListener(OnButtonClickListener listener) {
+    onButtonClickListener = listener;
   }
   
   public void setCurrentNumber(int currentNumber) {

@@ -1,32 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="@dimen/default_padding"
-    android:orientation="vertical"
-    android:background="@color/white"
-    android:clickable="true"
-    android:focusable="true"
-    tools:context=".fragments.AddTableFragment">
+    android:layout_height="match_parent">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/table_locations"
-        android:textSize="@dimen/h1"
-        android:textColor="@color/colorPrimary"/>
+        android:layout_height="match_parent"
+        android:padding="@dimen/default_padding"
+        android:orientation="vertical"
+        android:background="@color/white"
+        android:clickable="true"
+        android:focusable="true"
+        tools:context=".fragments.AddTableFragment">
 
-    <RelativeLayout
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/table_locations"
+            android:textSize="@dimen/h1"
+            android:textColor="@color/colorPrimary"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/line_thickness"
+            android:layout_marginBottom="5dp"
+            android:background="@color/colorPrimary"/>
+
+        <net.cafepp.cafepp.custom_views.DynamicListView
+            android:id="@+id/listView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/interlayer"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/line_thickness"
-        android:layout_marginBottom="5dp"
-        android:background="@color/colorPrimary"/>
+        android:layout_height="match_parent"
+        android:background="@mipmap/black_dark_transparent_50"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone"
+        android:alpha="0"/>
 
-    <ListView
-        android:id="@+id/listView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-
-</LinearLayout>
+</FrameLayout>

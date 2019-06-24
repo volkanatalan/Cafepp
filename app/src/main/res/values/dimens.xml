@@ -23,6 +23,7 @@
     <dimen name="standard_130">130dp</dimen>
     <dimen name="standard_195">195dp</dimen>
 
+    <dimen name="mini_fragment_side_line_thickness">3dp</dimen>
     <dimen name="pair_key_text_size">25sp</dimen>
     <dimen name="add_device_dim">30dp</dimen>
     <dimen name="connect_image_dim">40dp</dimen>
@@ -41,4 +42,5 @@
     <dimen name="grid_spacing">10dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="button_padding">20dp</dimen>
+    <dimen name="label_end_padding">20dp</dimen>
 </resources>

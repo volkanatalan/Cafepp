@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:minWidth="450dp"
+    android:layout_height="wrap_content"
+    android:layout_margin="20dp"
+    android:paddingStart="@dimen/mini_fragment_side_line_thickness"
+    android:paddingEnd="@dimen/mini_fragment_side_line_thickness"
+    android:paddingBottom="@dimen/mini_fragment_side_line_thickness"
+    android:orientation="vertical"
+    android:layout_gravity="center"
+    android:gravity="center_vertical"
+    android:clickable="true"
+    android:focusable="true"
+    android:background="@drawable/mini_fragment_header"
+    tools:context=".fragments.ControlTableFragment">
+
+    <TextView
+        android:id="@+id/headerTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/control_table"
+        android:padding="@dimen/default_padding"
+        android:textSize="@dimen/h2"
+        android:textColor="@color/white"
+        android:textStyle="bold"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/default_padding"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/stroke_white_background">
+
+            <GridLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:columnCount="2"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:orientation="vertical"
+                    android:layout_margin="@dimen/small_padding"
+                    android:padding="@dimen/small_padding"
+                    android:gravity="center"
+                    android:background="@drawable/table_bg_free">
+
+                    <ImageView
+                        android:id="@+id/takeOrderImageView"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_margin="@dimen/default_padding"
+                        app:srcCompat="@drawable/take_order"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/take_order"
+                        android:textAlignment="center"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/h3" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:orientation="vertical"
+                    android:layout_margin="@dimen/small_padding"
+                    android:padding="@dimen/small_padding"
+                    android:gravity="center"
+                    android:background="@drawable/table_bg_free">
+
+                    <ImageView
+                        android:id="@+id/paymentImageView"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_margin="@dimen/default_padding"
+                        app:srcCompat="@drawable/payment"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/payment"
+                        android:textAlignment="center"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/h3" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:orientation="vertical"
+                    android:layout_margin="@dimen/small_padding"
+                    android:padding="@dimen/small_padding"
+                    android:gravity="center"
+                    android:background="@drawable/table_bg_free">
+
+                    <ImageView
+                        android:id="@+id/orderCancellationImageView"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_margin="@dimen/default_padding"
+                        app:srcCompat="@drawable/order_cancellation"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/order_cancellation"
+                        android:textAlignment="center"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/h3" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:orientation="vertical"
+                    android:layout_margin="@dimen/small_padding"
+                    android:padding="@dimen/small_padding"
+                    android:gravity="center"
+                    android:background="@drawable/table_bg_free">
+
+                    <ImageView
+                        android:id="@+id/tableStatusImageView"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_margin="@dimen/default_padding"
+                        app:srcCompat="@drawable/roundtable256x256"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/table_status"
+                        android:textAlignment="center"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/h3" />
+                </LinearLayout>
+
+            </GridLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

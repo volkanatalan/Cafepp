@@ -91,9 +91,27 @@ public class TableLocationsListViewAdapter extends BaseAdapter {
     notifyDataSetChanged();
   }
   
+  public void remove(String location) {
+    int index = getIndex(location);
+    if (index > -1) {
+      tableLocations.remove(index);
+      notifyDataSetChanged();
+    }
+  }
+  
   public void set(int index, TableLocation location) {
     tableLocations.set(index, location);
     notifyDataSetChanged();
+  }
+  
+  public int getIndex(String location) {
+    for (int i = 0; i < tableLocations.size(); i++) {
+      if (location.equals(tableLocations.get(i).getName())) {
+        return i;
+      }
+    }
+  
+    return -1;
   }
   
   private OnTableNumberClickedListener onTableNumberClickedListener;

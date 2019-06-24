@@ -24,7 +24,7 @@ public class TableFragment extends Fragment {
   private List<Table> mAllTables = new ArrayList<>();
   private List<Table> mExtraTables = new ArrayList<>();
   private TableContentFragment mTableContentFragment;
-  private TablesGridAdapter tablesGridAdapter;
+  private TablesGridAdapter mTablesGridAdapter;
   
   public TableFragment() {
     // Required empty public constructor
@@ -49,19 +49,19 @@ public class TableFragment extends Fragment {
                            Bundle savedInstanceState) {
     View view = inflater.inflate(R.layout.fragment_table, container, false);
     
-    tablesGridAdapter = new TablesGridAdapter(mAllTables);
+    mTablesGridAdapter = new TablesGridAdapter(mAllTables);
     
     GridView gridView = view.findViewById(R.id.gridView);
     gridView.setOnItemClickListener((parent, view1, position, id) -> {
       // Open TableContentFragment.
-      Table table = tablesGridAdapter.getItem(position);
+      Table table = mTablesGridAdapter.getItem(position);
       mTableContentFragment = TableContentFragment.newInstance(table);
       FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
       ft.add(R.id.fragmentContainer, mTableContentFragment, "TableContentFragment")
           .addToBackStack("TableContentFragment")
           .commit();
     });
-    gridView.setAdapter(tablesGridAdapter);
+    gridView.setAdapter(mTablesGridAdapter);
     
     return view;
   }
@@ -73,6 +73,10 @@ public class TableFragment extends Fragment {
     
     mAllTables.clear();
     
+    // Move tables in mExtraTables list to mNotFreeTables.
+    mNotFreeTables.addAll(mExtraTables);
+    mExtraTables.clear();
+    
     // Find extra tables.
     for (int i = 0; i < mNotFreeTables.size(); i++) {
       Table table = mNotFreeTables.get(i);
@@ -83,8 +87,9 @@ public class TableFragment extends Fragment {
     }
     
     
-    int totalNumber = numberOfTables + mNotFreeTables.size();
+    int totalNumber = numberOfTables + mExtraTables.size();
     int tableNumber = 0;
+    
     
     // Populate mAllTables list with default tables.
     for (int i = 0; i < totalNumber; i++) {
@@ -113,6 +118,25 @@ public class TableFragment extends Fragment {
     setupGridAdapterView(location);
   }
   
+  public void update(Table table) {
+    // Find out if there is the same table in mNotFreeTables list.
+    for (int i = 0; i < mNotFreeTables.size(); i++) {
+      if (table.getNumber() == mNotFreeTables.get(i).getNumber()) {
+        // If there is the same table update it.
+        mNotFreeTables.set(i, table);
+      }
+    }
+    
+    // Update mAllTables list.
+    for (int i = 0; i < mAllTables.size(); i++) {
+      if (table.getNumber() == mAllTables.get(i).getNumber()) {
+        mAllTables.set(i, table);
+      }
+    }
+  
+    mTablesGridAdapter.notifyDataSetChanged();
+  }
+  
   public TableLocation getTableLocation() {
     return mTableLocation;
   }
@@ -123,9 +147,5 @@ public class TableFragment extends Fragment {
   
   public void setNotFreeTables(List<Table> tables) {
     mNotFreeTables = tables;
-  }
-  
-  public TableContentFragment getTableContentFragment() {
-    return mTableContentFragment;
   }
 }

@@ -13,6 +13,10 @@
             android:icon="@drawable/table"
             android:title="@string/tables" />
         <item
+            android:id="@+id/nav_products"
+            android:icon="@drawable/iconfinder_food_drink_36_809001"
+            android:title="@string/products" />
+        <item
             android:id="@+id/nav_stock"
             android:icon="@drawable/stock"
             android:title="@string/stock" />

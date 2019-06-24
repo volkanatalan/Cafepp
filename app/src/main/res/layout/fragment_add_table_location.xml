@@ -5,95 +5,128 @@
     android:minWidth="450dp"
     android:layout_height="wrap_content"
     android:layout_margin="20dp"
+    android:paddingStart="@dimen/mini_fragment_side_line_thickness"
+    android:paddingEnd="@dimen/mini_fragment_side_line_thickness"
+    android:paddingBottom="@dimen/mini_fragment_side_line_thickness"
     android:orientation="vertical"
     android:layout_gravity="center"
     android:gravity="center_vertical"
     android:clickable="true"
     android:focusable="true"
-    android:background="@drawable/stroke_white_background"
+    android:background="@drawable/mini_fragment_header"
     tools:context=".fragments.AddTableLocationFragment">
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/headerTextView"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="@string/edit_location"
         android:padding="@dimen/default_padding"
-        android:orientation="vertical">
-
-        <android.support.design.widget.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/default_margin_bottom">
-
-            <EditText
-                android:id="@+id/locationNameEditText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:hint="@string/location_name"
-                android:inputType="textCapSentences"
-                android:selectAllOnFocus="true"
-                android:singleLine="true"
-                android:textSize="@dimen/h3" />
-
-        </android.support.design.widget.TextInputLayout>
-
-        <android.support.design.widget.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/default_margin_bottom">
-
-            <EditText
-                android:id="@+id/tableNumberEditText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:hint="@string/table_number"
-                android:inputType="numberDecimal"
-                android:selectAllOnFocus="true"
-                android:singleLine="true"
-                android:textSize="@dimen/h3" />
-
-        </android.support.design.widget.TextInputLayout>
-    </LinearLayout>
-
+        android:textSize="@dimen/h2"
+        android:textColor="@color/white"
+        android:textStyle="bold"/>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/black_overlay"
-        android:contentDescription="seperator" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal" >
-
-        <TextView
-            android:id="@+id/cancelTextView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:padding="@dimen/button_padding"
-            android:layout_weight="1"
-            android:text="@string/cancel"
-            android:textSize="16sp"
-            android:gravity="center" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_vertical">
 
         <LinearLayout
-            android:layout_width="1dp"
-            android:layout_height="match_parent"
-            android:background="@color/black_overlay"
-            android:contentDescription="seperator" />
-
-        <TextView
-            android:id="@+id/confirmTextView"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="@dimen/button_padding"
-            android:layout_weight="1"
-            android:text="@string/confirm"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:gravity="center" />
+            android:padding="@dimen/default_padding"
+            android:orientation="vertical"
+            android:background="@drawable/rounded_top_white">
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/default_margin_bottom">
+
+                <android.support.design.widget.TextInputEditText
+                    android:id="@+id/locationNameEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:hint="@string/location_name"
+                    android:inputType="textCapSentences"
+                    android:selectAllOnFocus="true"
+                    android:singleLine="true"
+                    android:textSize="@dimen/h3" />
+
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/default_margin_bottom">
+
+                <android.support.design.widget.TextInputEditText
+                    android:id="@+id/tableNumberEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:hint="@string/table_number"
+                    android:inputType="numberDecimal"
+                    android:selectAllOnFocus="true"
+                    android:singleLine="true"
+                    android:textSize="@dimen/h3" />
+
+            </android.support.design.widget.TextInputLayout>
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:id="@+id/removeTextView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/button_padding"
+                android:layout_weight="1"
+                android:layout_marginEnd="1dp"
+                android:text="@string/remove"
+                android:textSize="@dimen/h2"
+                android:textColor="@color/colorAccent"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:background="@drawable/rounded_bottom_left_white" />
+
+
+            <TextView
+                android:id="@+id/cancelTextView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/button_padding"
+                android:layout_weight="1"
+                android:layout_marginStart="1dp"
+                android:layout_marginEnd="1dp"
+                android:text="@string/cancel"
+                android:textColor="@color/black"
+                android:textSize="@dimen/h2"
+                android:gravity="center"
+                android:background="@color/white" />
+
+
+            <TextView
+                android:id="@+id/confirmTextView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/button_padding"
+                android:layout_weight="1"
+                android:layout_marginStart="1dp"
+                android:text="@string/confirm"
+                android:textSize="@dimen/h2"
+                android:textColor="@color/colorPrimary"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:background="@drawable/rounded_bottom_right_white" />
+        </LinearLayout>
     </LinearLayout>
 
 </LinearLayout>

@@ -140,7 +140,7 @@
                 android:id="@+id/priceTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/price_title"
+                android:text="@string/price_semicolon"
                 android:textColor="@android:color/black"
                 android:textSize="20sp"
                 android:textStyle="bold" />

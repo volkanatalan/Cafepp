@@ -7,7 +7,7 @@ import net.cafepp.cafepp.enums.TableStatus;
 import java.util.Date;
 
 public class Table {
-  private int id;
+  private int id = -1;
   private int number;
   private String location;
   private Date openingDate;
@@ -77,8 +77,8 @@ public class Table {
     this.status = status;
   }
   
-  public void setSituation(String situation) {
-    switch (situation) {
+  public void setStatus(String status) {
+    switch (status) {
       case "FREE":
         this.status = TableStatus.FREE;
         break;

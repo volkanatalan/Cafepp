@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import net.cafepp.cafepp.R;
-import net.cafepp.cafepp.activities.HomeActivity;
 import net.cafepp.cafepp.activities.MenuActivity;
 
 public class HomeFragment extends Fragment {

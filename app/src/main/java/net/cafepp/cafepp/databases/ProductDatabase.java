@@ -23,7 +23,7 @@ public class ProductDatabase extends SQLiteOpenHelper {
   private static final String TABLE_PRODUCTS = "Products";
   // IOP means "Ingredients Of Products"
   private static final String TABLE_IOP = "IngredientsOfProducts";
-  private static final String TABLE_PRODUCT_IMAGES = "ProductImagesTable";
+  private static final String TABLE_PRODUCT_IMAGES = "ProductImages";
   
   private static final String COLUMN_ID = "_id";
   private static final String COLUMN_NO = "Num";

@@ -12,6 +12,7 @@ import net.cafepp.cafepp.objects.TableLocation;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -29,7 +30,7 @@ public class TableDatabase extends SQLiteOpenHelper {
   private static final String COLUMN_LOCATION = "Location";
   private static final String COLUMN_OPENING_DATE = "OpeningDate";
   private static final String COLUMN_PRICE = "Price";
-  private static final String COLUMN_SITUATION = "Situation";
+  private static final String COLUMN_STATUS = "Status";
   
   public TableDatabase(Context context) {
     super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -47,11 +48,11 @@ public class TableDatabase extends SQLiteOpenHelper {
     String createContentsTable =
         "CREATE TABLE " + TABLE_CONTENTS + "(" +
             COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            COLUMN_NAME + " TEXT, " +
+            COLUMN_NAME + " INTEGER, " +
             COLUMN_LOCATION + " TEXT," +
             COLUMN_OPENING_DATE + " TEXT," +
             COLUMN_PRICE + " TEXT," +
-            COLUMN_SITUATION + " TEXT" + ");";
+            COLUMN_STATUS + " TEXT" + ");";
   
     
     db.execSQL(createPositionsTable);
@@ -65,28 +66,33 @@ public class TableDatabase extends SQLiteOpenHelper {
     onCreate(db);
   }
   
+  
+  /**
+   * Returns id of the table.
+   */
   public void add(Table table) {
-    int name = table.getNumber();
+    int id = table.getId();
+    int number = table.getNumber();
     String position = table.getLocation();
-    String openingDate = table.getOpeningDate().toString();
+    Date date = table.getOpeningDate();
+    String openingDate = date == null ? "" : date.toString();
     String price = table.getPrice() + "";
     String situation = table.getStatus().toString();
   
-    if (!hasTable(table)) {
+    if (id == -1) {
       SQLiteDatabase db = this.getWritableDatabase();
       ContentValues values = new ContentValues();
-      values.put(COLUMN_NAME, name);
+      values.put(COLUMN_NAME, number);
       values.put(COLUMN_LOCATION, position == null ? "" : position);
       values.put(COLUMN_OPENING_DATE, openingDate);
       values.put(COLUMN_PRICE, price);
-      values.put(COLUMN_SITUATION, situation);
+      values.put(COLUMN_STATUS, situation);
       db.insert(TABLE_CONTENTS, "", values);
       db.close();
     }
     
     else {
-      remove(table);
-      add(table);
+      updateTable(table);
     }
   }
   
@@ -98,17 +104,60 @@ public class TableDatabase extends SQLiteOpenHelper {
     db.close();
   }
   
+  public void updateTable(Table table) {
+    SQLiteDatabase db = getWritableDatabase();
+    ContentValues contentValues = new ContentValues();
+    contentValues.put(COLUMN_ID, table.getId());
+    contentValues.put(COLUMN_NAME, table.getNumber());
+    contentValues.put(COLUMN_LOCATION, table.getLocation());
+    contentValues.put(COLUMN_OPENING_DATE, table.getOpeningDate().toString());
+    contentValues.put(COLUMN_PRICE, table.getPrice());
+    contentValues.put(COLUMN_STATUS, table.getStatus().toString());
+    db.update(TABLE_CONTENTS, contentValues, COLUMN_ID + " = ?", new String[]{table.getId() + ""});
+    db.close();
+  }
+  
+  public int getTableId(Table table) {
+    String location = table.getLocation();
+    int tableNumber = table.getNumber();
+    
+    SQLiteDatabase db = this.getReadableDatabase();
+    Cursor c = db.rawQuery("SELECT " + COLUMN_ID + " FROM " + TABLE_CONTENTS +
+        " WHERE " + COLUMN_LOCATION + "= \"" + location +
+        "\" AND " + COLUMN_NAME + " = \"" + tableNumber + "\";",
+        null);
+  
+    while (c.moveToNext()) {
+      return c.getInt(c.getColumnIndex(COLUMN_ID));
+    }
+    
+    return -1;
+  }
+  
   public boolean hasTable(Table table) {
-    int tableName = table.getNumber();
-    String position = table.getLocation();
+    int tableNumber = table.getNumber();
+    String location = table.getLocation();
     
     SQLiteDatabase db = this.getReadableDatabase();
     Cursor c = db.rawQuery(
         "SELECT * FROM " + TABLE_CONTENTS +
-            " WHERE " + COLUMN_NAME + " = \"" + tableName + "\" " +
-            "AND " + COLUMN_LOCATION + " =\"" + position + "\";", null);
+            " WHERE " + COLUMN_NAME + " = \"" + tableNumber + "\" " +
+            "AND " + COLUMN_LOCATION + " =\"" + location + "\";", null);
     
     
+    boolean hasTable = c.moveToNext();
+  
+    c.close();
+    db.close();
+    return hasTable;
+  }
+  
+  public boolean hasLocationInContents(String locationName) {
+    SQLiteDatabase db = this.getReadableDatabase();
+    Cursor c = db.rawQuery(
+        "SELECT * FROM " + TABLE_CONTENTS +
+            " WHERE " + COLUMN_LOCATION + " = \"" + locationName + "\";", null);
+  
     boolean hasTable = c.moveToNext();
   
     c.close();
@@ -123,15 +172,16 @@ public class TableDatabase extends SQLiteOpenHelper {
     
     while (c.moveToNext()) {
       Table table = new Table();
+  
+      table.setId(c.getInt(c.getColumnIndex(COLUMN_ID)));
+      table.setNumber(c.getInt(c.getColumnIndex(COLUMN_NAME)));
+      table.setLocation(c.getString(c.getColumnIndex(COLUMN_LOCATION)));
+      table.setPrice(Float.parseFloat(c.getString(c.getColumnIndex(COLUMN_PRICE))));
+      table.setStatus(c.getString(c.getColumnIndex(COLUMN_STATUS)));
       
       try {
-        table.setId(c.getInt(c.getColumnIndex(COLUMN_ID)));
-        table.setNumber(c.getInt(c.getColumnIndex(COLUMN_NAME)));
-        table.setLocation(c.getString(c.getColumnIndex(COLUMN_LOCATION)));
-        table.setOpeningDate(new SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.getDefault())
+        table.setOpeningDate(new SimpleDateFormat("EEE MMM d HH:mm:ss z yyyy", Locale.getDefault())
                                  .parse(c.getString(c.getColumnIndex(COLUMN_OPENING_DATE))));
-        table.setPrice(Float.parseFloat(c.getString(c.getColumnIndex(COLUMN_PRICE))));
-        table.setSituation(c.getString(c.getColumnIndex(COLUMN_SITUATION)));
       } catch (ParseException e) {
         e.printStackTrace();
       }
@@ -144,7 +194,7 @@ public class TableDatabase extends SQLiteOpenHelper {
     return tables;
   }
   
-  public TableLocation addTableLocation(TableLocation location) {
+  public TableLocation add(TableLocation location) {
     String name = location.getName();
     int position = location.getTotalTable();
     
@@ -158,13 +208,28 @@ public class TableDatabase extends SQLiteOpenHelper {
     return getTableLocation(name);
   }
   
+  public void remove(TableLocation location) {
+    if (hasLocationInContents(location.getName())) {
+      location.setTotalTable(-1);
+      updateTableLocation(location);
+    }
+    
+    else {
+      SQLiteDatabase db = this.getWritableDatabase();
+      db.execSQL("DELETE FROM " + TABLE_LOCATIONS +
+                    " WHERE " + COLUMN_NAME + " =\"" + location.getName() + "\";");
+      db.close();
+    }
+  }
+  
   public TableLocation getTableLocation(String name) {
     TableLocation location = null;
     SQLiteDatabase db = this.getReadableDatabase();
     Cursor c = db.rawQuery("SELECT * FROM " + TABLE_LOCATIONS +
-                               " WHERE " + COLUMN_NAME + " = \"" + name + "\"" + ";", null);
-  
+                               " WHERE " + COLUMN_NAME + " = \"" + name + "\";", null);
+    
     while (c.moveToNext()) {
+      location = new TableLocation();
       location.setId(c.getInt(c.getColumnIndex(COLUMN_ID)));
       location.setName(c.getString(c.getColumnIndex(COLUMN_NAME)));
       location.setTotalTable(c.getInt(c.getColumnIndex(COLUMN_NUMBER)));
@@ -197,15 +262,16 @@ public class TableDatabase extends SQLiteOpenHelper {
   
   public boolean hasTableLocation(String location) {
     SQLiteDatabase db = this.getReadableDatabase();
-    Cursor c = db.rawQuery("SELECT " + COLUMN_NAME + " FROM " + TABLE_LOCATIONS + ";", null);
+    Cursor c = db.rawQuery("SELECT " + COLUMN_NAME +
+                               " FROM " + TABLE_LOCATIONS +
+                               " WHERE " + COLUMN_NAME + " = \"" + location + "\";",
+        null);
   
-    while (c.moveToNext()) {
-      String name = c.getString(c.getColumnIndex(COLUMN_NAME));
-      if (name.equals(location))
-        return true;
-    }
+    boolean hasLocation = c.moveToNext();
+    c.close();
+    db.close();
     
-    return false;
+    return hasLocation;
   }
   
   public void updateTableLocation(TableLocation location) {
@@ -215,5 +281,6 @@ public class TableDatabase extends SQLiteOpenHelper {
     contentValues.put(COLUMN_NAME, location.getName());
     contentValues.put(COLUMN_NUMBER, location.getTotalTable());
     db.update(TABLE_LOCATIONS, contentValues, COLUMN_ID + " = ?", new String[]{location.getId() + ""});
+    db.close();
   }
 }

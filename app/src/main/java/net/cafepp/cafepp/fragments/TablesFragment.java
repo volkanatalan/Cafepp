@@ -5,7 +5,6 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -27,10 +26,16 @@ public class TablesFragment extends Fragment {
   private List<Table> mTables;
   private ViewPager mViewPager;
   private ViewPagerAdapter mAdapter;
+  private TableFragment mCurrentFragment;
+  
+  
   
   public TablesFragment() {
     // Required empty public constructor
   }
+  
+  
+  
   
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -43,24 +48,33 @@ public class TablesFragment extends Fragment {
     tableDatabase.close();
   }
   
+  
+  
+  
   @Override
   public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
     inflater.inflate(R.menu.fragment_tables, menu);
     super.onCreateOptionsMenu(menu, inflater);
   }
   
+  
+  
+  
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
       case R.id.action_fragmenttables_add:
         getActivity().getSupportFragmentManager().beginTransaction()
-            .replace(R.id.fragmentContainer, new AddTableFragment())
+            .replace(R.id.fragmentContainer, new AddTableFragment(), "AddTableFragment")
             .addToBackStack("AddTableFragment")
             .commit();
         break;
     }
     return super.onOptionsItemSelected(item);
   }
+  
+  
+  
   
   @Override
   public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -74,13 +88,16 @@ public class TablesFragment extends Fragment {
     return view;
   }
   
+  
+  
+  
   private void setupViewPager(ViewPager viewPager) {
     mAdapter = new ViewPagerAdapter(getChildFragmentManager());
     
     for (TableLocation location : mTableLocations) {
       List<Table> tables = new ArrayList<>();
       for (Table table : mTables) {
-        if (table.getLocation().equals(location))
+        if (table.getLocation().equals(location.getName()))
           tables.add(table);
       }
       mAdapter.addFragment(location.getName(), TableFragment.newInstance(location, tables));
@@ -89,18 +106,26 @@ public class TablesFragment extends Fragment {
     viewPager.setAdapter(mAdapter);
     viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
       @Override
-      public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {}
+      public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+    
+      }
   
       @Override
       public void onPageSelected(int position) {
-        Log.d("TablesFragment", "position: " + position);}
+        mCurrentFragment = (TableFragment) mAdapter.getRegisteredFragment(position);
+      }
   
       @Override
-      public void onPageScrollStateChanged(int state) {}
+      public void onPageScrollStateChanged(int state) {
+    
+      }
     });
   }
   
-  public void notifyViewPagerDataSetChanged() {
+  
+  
+  
+  public void updateViewPager() {
     TableDatabase tableDatabase = new TableDatabase(getContext());
     mTableLocations = tableDatabase.getTableLocations();
     mTables = tableDatabase.getTables();
@@ -110,11 +135,18 @@ public class TablesFragment extends Fragment {
     for (TableLocation location : mTableLocations) {
       List<Table> tables = new ArrayList<>();
       for (Table table : mTables) {
-        if (table.getLocation().equals(location))
+        if (table.getLocation().equals(location.getName()))
           tables.add(table);
       }
       mAdapter.addFragment(location.getName(), TableFragment.newInstance(location, tables));
     }
-    mAdapter.notifyDataSetChanged();
+  }
+  
+  
+  
+  
+  public void updateTableInCurrentLocation(Table table) {
+    mCurrentFragment = (TableFragment) mAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
+    mCurrentFragment.update(table);
   }
 }

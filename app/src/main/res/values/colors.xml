@@ -2,8 +2,9 @@
 <resources>
     <color name="colorPrimary">#008577</color>
     <color name="colorPrimaryDark">#00574B</color>
-    <color name="colorAccent">#00574B</color>
+    <color name="colorAccent">#e41749</color>
 
+    <color name="dark_background">#222831</color>
     <color name="black_overlay">#66000000</color>
     <color name="simple_yellow">#ECD078</color>
     <color name="button_on_touch">#D3D3D3</color>

@@ -10,7 +10,7 @@
         android:id="@+id/situationLabelTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/situation"
+        android:text="@string/table_info"
         android:textColor="@color/colorPrimary"
         android:textSize="@dimen/h2"/>
 
@@ -20,35 +20,53 @@
         android:layout_marginBottom="5dp"
         android:background="@color/colorPrimary"/>
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/default_margin_bottom"
-        android:background="@drawable/stroke_white_background">
+        android:orientation="horizontal">
 
-        <Spinner
-            android:id="@+id/tableSituationSpinner"
+        <TextView
+            android:id="@+id/tableInfoLabels"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingEnd="@dimen/label_end_padding"
+            android:textColor="@color/black"
+            android:textSize="@dimen/h2"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tableInfos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/h2"
+            android:textColor="@color/black"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ordersContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/ordersLabelTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:entries="@array/table_situation"/>
-    </RelativeLayout>
+            android:text="@string/orders"
+            android:textColor="@color/colorPrimary"
+            android:textSize="@dimen/h2"/>
 
-    <TextView
-        android:id="@+id/ordersLabelTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/orders"
-        android:textColor="@color/colorPrimary"
-        android:textSize="@dimen/h2"/>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/line_thickness"
+            android:layout_marginBottom="5dp"
+            android:background="@color/colorPrimary"/>
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/line_thickness"
-        android:layout_marginBottom="5dp"
-        android:background="@color/colorPrimary"/>
-
-    <ListView
-        android:id="@+id/ordersListView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        <ListView
+            android:id="@+id/ordersListView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </LinearLayout>
 </LinearLayout>
